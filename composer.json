@@ -1,0 +1,72 @@
+{
+  "name": "gasjki/game-server-query",
+  "description": "GameServerQuery - Extended PHP game server query library based on GameQ.",
+  "version": "1.0.0",
+  "type": "library",
+  "license": "LGPL-3.0+",
+  "keywords": [
+    "game server query",
+    "game server",
+    "server query",
+    "gameq plus",
+    "gameq",
+    "serverstatus"
+  ],
+  "authors": [
+    {
+      "name": "Austin Bischoff",
+      "email": "austin.bischoff@gmail.com",
+      "role": "Developer/Contributor of GameQ library",
+      "homepage": "https://github.com/Austinb"
+    },
+    {
+      "name": "Christoph Kretzschmar",
+      "email": "blackskyliner@googlemail.com",
+      "role": "Developer/Contributor of GameQ library",
+      "homepage": "https://github.com/Blackskyliner"
+    },
+    {
+      "name": "Marcel Bößendörfer",
+      "email": "m.boessendoerfer@marbis.net",
+      "role": "Developer/Contributor of GameQ library",
+      "homepage": "https://github.com/nitrado"
+    },
+    {
+      "name": "Alexander Hambalgo",
+      "role": "Developer/Contributor of GameQ library",
+      "homepage": "http://balgo.users.sourceforge.net/"
+    },
+    {
+      "name": "Holger",
+      "role": "Developer/Contributor of GameQ library",
+      "homepage": "http://icet33.users.sourceforge.net/"
+    },
+    {
+      "name": "Sebastian Weidenbach",
+      "role": "Developer/Contributor of GameQ library",
+      "homepage": "http://sebastianwe.users.sourceforge.net/"
+    },
+    {
+      "name": "Tudoran 'Gasjki' George-Cristian",
+      "email": "tudoran.george23@gmail.com",
+      "role": "Packagist/Composer Maintainer, Developer",
+      "homepage": "https://gamefire.ro/"
+    }
+  ],
+  "support": {
+    "source": "https://github.com/Gasjki/GameServerQuery",
+    "issues": "https://github.com/Gasjki/GameServerQuery/issues",
+    "wiki": "https://github.com/Gasjki/GameServerQuery/wiki"
+  },
+  "require": {
+    "php": ">=8.0",
+    "ext-bz2": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "GameServerQuery\\": "src/GameServerQuery/"
+    }
+  }
+}
