@@ -23,10 +23,10 @@ abstract class SourceProtocol extends AbstractProtocol
      * @var array
      */
     protected array $packages = [
-        self::PACKET_CHALLENGE => "\xFF\xFF\xFF\xFF\x56\x00\x00\x00\x00",
-        self::PACKET_DETAILS   => "\xFF\xFF\xFF\xFFTSource Engine Query\x00",
-        self::PACKET_PLAYERS   => "\xFF\xFF\xFF\xFF\x55%s",
-        self::PACKET_RULES     => "\xFF\xFF\xFF\xFF\x56%s",
+        self::PACKAGE_CHALLENGE => "\xFF\xFF\xFF\xFF\x56\x00\x00\x00\x00",
+        self::PACKAGE_DETAILS   => "\xFF\xFF\xFF\xFFTSource Engine Query\x00%s",
+        self::PACKAGE_PLAYERS   => "\xFF\xFF\xFF\xFF\x55%s",
+        self::PACKAGE_RULES     => "\xFF\xFF\xFF\xFF\x56%s",
     ];
 
     /**
@@ -36,9 +36,9 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     protected array $responses = [
         "\x49" => "processSourceInformation", // I
-        //        "\x6d" => "processGoldSourceInformation", // m, goldsource
-        //        "\x44" => "processPlayers", // D
-        //        "\x45" => "processRules", // E
+        "\x6d" => "processGoldSourceInformation", // m, goldsource
+        "\x44" => "processPlayers", // D
+        "\x45" => "processRules", // E
     ];
 
     /**
@@ -58,7 +58,7 @@ abstract class SourceProtocol extends AbstractProtocol
         parent::__construct();
 
         if (!function_exists('bzdecompress')) {
-            throw new \Exception('Bzip2 is not installed! See http://www.php.net/manual/en/book.bzip2.php for more details!');
+            throw new \Exception('Bzip2 is not installed! See https://www.php.net/manual/en/book.bzip2.php for more details!');
         }
     }
 
@@ -66,14 +66,12 @@ abstract class SourceProtocol extends AbstractProtocol
      * @inheritDoc
      * @throws \Exception
      */
-    public function updatePackagesBasedOnChallengePackageResponse(Buffer $buffer): void
+    public function updateQueryPackages(Buffer $buffer): void
     {
         $buffer->skip(5);
-
         $challenge = $buffer->read(4);
-        foreach ($this->packages as $type => $package) {
-            $this->packages[$type] = sprintf($package, $challenge);
-        }
+
+        $this->applyChallenge($challenge);
     }
 
     /**
@@ -103,42 +101,14 @@ abstract class SourceProtocol extends AbstractProtocol
                 continue;
             }
 
-            $packetId           = $buffer->readInt32Signed() + 10;
-            $packets[$packetId] = $buffer->getBuffer();
+            $packetId             = $buffer->readInt32Signed() + 10;
+            $packets[$packetId][] = $buffer->getBuffer();
         }
 
         // Clear memory.
         unset($data, $buffer, $header, $packetId);
 
         return $packets;
-    }
-
-    /**
-     * Process all extracted packets.
-     *
-     * @param Result $result
-     * @param array  $packets
-     *
-     * @return array
-     * @throws \Exception
-     */
-    protected function processPackets(Result $result, array $packets): array
-    {
-        foreach ($packets as $packetId => $packet) {
-            $buffer = new Buffer(is_array($packet) ? $this->preProcessPackets($packetId, $packet) : $packet);
-
-            // Get response letter.
-            $responseType = $buffer->read();
-
-            if (!array_key_exists($responseType, $this->responses)) {
-                throw new \BadMethodCallException('Request method does not exist for current protocol!');
-            }
-
-            call_user_func_array([$this, $this->responses[$responseType]], [$buffer, $result]);
-            unset($buffer, $responseType);
-        }
-
-        return $result->getResult();
     }
 
     /**
@@ -154,7 +124,6 @@ abstract class SourceProtocol extends AbstractProtocol
     {
         // Track them so we can order them.
         $data = [];
-
         foreach ($packets as $index => $pack) {
             $buffer = new Buffer($pack);
 
@@ -205,8 +174,12 @@ abstract class SourceProtocol extends AbstractProtocol
             $buffer->readInt16Signed();
 
             // We need to burn extra header (\xFF\xFF\xFF\xFF) on first loop.
-            if ($index == 0) {
-                $buffer->read(4);
+            if ($index === 0) {
+                $buffer->skip(4);
+
+                $result              = $buffer->getBuffer();
+                $data[$packetNumber] = $result;
+                continue;
             }
 
             $result              = $buffer->getBuffer();
@@ -219,8 +192,44 @@ abstract class SourceProtocol extends AbstractProtocol
         // Sort the packets by packet number
         ksort($data);
 
+        // Prepare first package.
+        $buffer = new Buffer($data[array_key_first($data)]);
+        $buffer->readString();
+
+        $data[array_key_first($data)] = "\x45" . $buffer->getBuffer();
+
         // Now combine the packs into one and return.
-        return implode("", $data);
+        return implode('', $data);
+    }
+
+    /**
+     * Process all extracted packets.
+     *
+     * @param Result $result
+     * @param array  $packets
+     *
+     * @return array
+     * @throws \Exception
+     */
+    protected function processPackets(Result $result, array $packets): array
+    {
+        foreach ($packets as $packetId => $packet) {
+            $buffer = new Buffer(is_array($packet) ? $this->preProcessPackets($packetId, $packet) : $packet);
+
+            // Get response letter.
+            $responseType = $buffer->read();
+
+            if (!array_key_exists($responseType, $this->responses)) {
+                throw new \BadMethodCallException(
+                    sprintf('Requested parser for response %s does not exist for current protocol!', $responseType)
+                );
+            }
+
+            call_user_func_array([$this, $this->responses[$responseType]], [$buffer, $result]);
+            unset($buffer, $responseType);
+        }
+
+        return $result->getResult();
     }
 
     /**
@@ -229,10 +238,9 @@ abstract class SourceProtocol extends AbstractProtocol
      * @param Buffer $buffer
      * @param Result $result
      *
-     * @return Result
      * @throws \Exception
      */
-    protected function processSourceInformation(Buffer $buffer, Result $result): Result
+    protected function processSourceInformation(Buffer $buffer, Result $result): void
     {
         $buffer->skip(); // Skip protocol
 
@@ -242,11 +250,65 @@ abstract class SourceProtocol extends AbstractProtocol
 
         $buffer->readString(); // Skip game_dir
         $buffer->readString(); // Skip game_descr
-        $steamAppId = $buffer->readInt16(); // Skip appId
 
+        $result->addRule('steam_appid', $buffer->readInt16());
         $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, $buffer->readInt8());
         $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, $buffer->readInt8());
         $result->addInformation(Result::GENERAL_BOTS_SUBCATEGORY, $buffer->readInt8());
+
+        if ($dedicated = $buffer->read()) {
+            $dedicated = strtolower($dedicated);
+            $dedicated = $dedicated === 'd' ? 'Dedicated' : ($dedicated === 'l' ? 'Non-dedicated' : 'Proxy');
+        }
+
+        $result->addInformation(Result::GENERAL_DEDICATED_SUBCATEGORY, $dedicated);
+
+        // l = Linux, w = Windows, m / o = MacOs
+        if ($os = $buffer->read()) {
+            $os = strtolower($os);
+            $os = $os === 'l' ? 'Linux' : ($os === 'w' ? 'Windows' : 'Mac Os');
+        }
+
+        $result->addInformation(Result::GENERAL_OS_SUBCATEGORY, $os);
+        $result->addInformation(Result::GENERAL_PASSWORD_SUBCATEGORY, (bool) $buffer->readInt8());
+
+        $buffer->readInt8(); // Skip VAC secure.
+
+        // Only for The Ship.
+        if ($result->getRule('steam_appid') === 2400) {
+            $result->addRule('game_mode', strval($buffer->readInt8()));
+            $result->addRule('witness_count', strval($buffer->readInt8()));
+            $result->addRule('witness_time', strval($buffer->readInt8()));
+        }
+
+        $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $buffer->readString());
+
+        unset($buffer); // Clear buffer from memory.
+    }
+
+    /**
+     * Process server information for Gold Source Engine servers.
+     *
+     * @param Buffer $buffer
+     * @param Result $result
+     *
+     * @throws \Exception
+     */
+    protected function processGoldSourceInformation(Buffer $buffer, Result $result): void
+    {
+        $buffer->readString(); // Skip server address
+
+        // General section -->
+        $result->addInformation(Result::GENERAL_ACTIVE_SUBCATEGORY, true);
+        $result->addInformation(Result::GENERAL_HOSTNAME_SUBCATEGORY, $buffer->readString());
+        $result->addInformation(Result::GENERAL_MAP_SUBCATEGORY, $buffer->readString());
+
+        $buffer->readString(); // Skip game_dir
+        $buffer->readString(); // Skip game_descr
+
+        $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, $buffer->readInt8());
+        $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, $buffer->readInt8());
+        $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $buffer->readInt8());
 
         if ($dedicated = $buffer->read()) {
             $dedicated = strtolower($dedicated);
@@ -264,20 +326,70 @@ abstract class SourceProtocol extends AbstractProtocol
         $result->addInformation(Result::GENERAL_OS_SUBCATEGORY, $os);
         $result->addInformation(Result::GENERAL_PASSWORD_SUBCATEGORY, (bool) $buffer->readInt8());
 
-        $buffer->readInt8(); // Skip secure.
-
-        // Only for The Ship.
-        if ($steamAppId === 2400) {
-            $result->addRule('game_mode', strval($buffer->readInt8()));
-            $result->addRule('witness_count', strval($buffer->readInt8()));
-            $result->addRule('witness_time', strval($buffer->readInt8()));
+        // Mode
+        $mode = $buffer->readInt8();
+        if ($mode === 1) {
+            $buffer->readString(); // Skip mode URL info
+            $buffer->readString(); // Skip mode URL download
+            $buffer->skip(); // Skip
+            $buffer->readInt32Signed(); // Skip mode version
+            $buffer->readInt32Signed(); // Skip mode size
+            $buffer->readInt8(); // Skip mode type
+            $buffer->readInt8(); // Skip mode dll
         }
 
-        $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $buffer->readString());
+        $buffer->readInt8(); // Skip secure
+        $result->addInformation(Result::GENERAL_BOTS_SUBCATEGORY, $buffer->readInt8());
 
         unset($buffer); // Clear buffer from memory.
+    }
 
-        return $result;
+    /**
+     * Process server online players.
+     *
+     * @param Buffer $buffer
+     * @param Result $result
+     *
+     * @throws \Exception
+     */
+    protected function processPlayers(Buffer $buffer, Result $result): void
+    {
+        if (!$buffer->readInt8()) {
+            return;
+        }
+
+        while ($buffer->getLength()) {
+            $buffer->readInt8(); // Skip player ID.
+
+            $result->addPlayer($buffer->readString(), $buffer->readInt32Signed(), $buffer->readFloat32());
+        }
+
+        unset($buffer); // Clear buffer from memory.
+    }
+
+    /**
+     * Process server rules.
+     *
+     * @param Buffer $buffer
+     * @param Result $result
+     *
+     * @throws \Exception
+     */
+    protected function processRules(Buffer $buffer, Result $result): void
+    {
+        if (!$buffer->readInt16Signed()) {
+            return;
+        }
+
+        while ($buffer->getLength()) {
+            $result->addRule($buffer->readString(), $buffer->readString());
+        }
+
+        if ($result->hasRule('sv_version')) {
+            $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $result->getRule('sv_version'));
+        }
+
+        unset($buffer); // Clear buffer from memory.
     }
 
     /**
@@ -287,7 +399,6 @@ abstract class SourceProtocol extends AbstractProtocol
     public function handleResponse(array $responses): array
     {
         $result = new Result();
-        $result->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, get_class($this));
 
         // No data to be parsed.
         if (!count($responses)) {

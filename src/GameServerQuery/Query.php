@@ -42,81 +42,19 @@ class Query
     }
 
     /**
-     * Create new socket for given server.
-     *
-     * @param Server $server
-     *
-     * @return resource|mixed
-     * @throws \Exception
-     */
-    protected function createSocket(Server $server): mixed
-    {
-        $address = sprintf('%s://%s', $server->getProtocol()->getTransportSchema(), $server->getFullAddressWithQueryPort());
-        $context = stream_context_create(['socket' => ['bindto' => '0:0']]);
-
-        // Try to create socket.
-        $socket = stream_socket_client(
-            $address,
-            $errorNumber,
-            $errorMessage,
-            $this->config->get('timeout', 3),
-            STREAM_CLIENT_CONNECT,
-            $context
-        );
-
-        if (!$socket) {
-            throw new \Exception(sprintf("Socket was not created for server (%s).", $server->getFullAddressWithQueryPort()));
-        }
-
-        stream_set_timeout($socket, $this->config->get('timeout', 3));
-        stream_set_blocking($socket, $server->getProtocol()->isBlockingMode());
-
-        return $socket;
-    }
-
-    /**
-     * Write to open socket.
-     *
-     * @param        $socket
-     * @param string $package
-     *
-     * @return int|bool
-     */
-    protected function writeSocket($socket, string $package): int|bool
-    {
-        // @TODO: To be removed when resource typehint will be available.
-        if (!is_resource($socket)) {
-            throw new \InvalidArgumentException("Invalid argument given. Expected a socket resource!");
-        }
-
-        return fwrite($socket, $package);
-    }
-
-    /**
-     * Close socket connection.
-     *
-     * @param resource $socket
-     */
-    protected function closeSocket($socket): void
-    {
-        fclose($socket);
-        unset($socket);
-    }
-
-    /**
      * Read information from socket.
      *
-     * @param resource $socket
+     * @param Socket $socket
      *
      * @return array
      */
-    protected function doStreamQuery($socket): array
+    protected function doStreamQuery(Socket $socket): array
     {
         $responses    = [];
         $isLoopActive = true;
         $i            = 0;
 
-        $read   = [$socket];
+        $read   = [$socket = $socket->getSocket()];
         $write  = null;
         $except = null;
 
@@ -125,7 +63,7 @@ class Query
             return $responses;
         }
 
-        $timeToStop = microtime(true) + ($this->config->get('timeout', 3));
+        $timeToStop = microtime(true) + $this->config->get('timeout', 3);
 
         while ($isLoopActive && microtime(true) < $timeToStop) {
             // Check to make sure $read is not empty. Otherwise, we are done!
@@ -139,7 +77,7 @@ class Query
             }
 
             foreach ($read as $streamingSocket) {
-                if (($response = fread($streamingSocket, 32768)) === false) {
+                if (($response = fread($streamingSocket, 4096)) === false) {
                     continue;
                 }
 
@@ -163,17 +101,17 @@ class Query
     /**
      * Do query to extract binary information from socket.
      *
-     * @param resource $socket
-     * @param Server   $server
+     * @param Socket $socket
+     * @param Server $server
      *
      * @return array
      */
-    protected function doQuery($socket, Server $server): array
+    protected function doQuery(Socket $socket, Server $server): array
     {
-        $packages = $server->getProtocol()->getAllPackagesExcept(ProtocolInterface::PACKET_CHALLENGE);
+        $packages = $server->getProtocol()->getAllPackagesExcept(ProtocolInterface::PACKAGE_CHALLENGE);
 
         foreach ($packages as $package) {
-            $this->writeSocket($socket, $package);
+            $socket->write($package);
             usleep($this->config->get('write_wait', 500));
         }
 
@@ -193,10 +131,10 @@ class Query
 
         foreach ($this->servers as $fullAddress => $server) {
             // Set default response format.
-            $response[$fullAddress] = [];
+            $response[$fullAddress] = (new Result())->getResult();
 
             // Open socket for server.
-            $socket = $this->createSocket($server);
+            $socket = new Socket($server, $this->config->get('timeout', 3));
 
             // Check if protocol has challenge.
             if (!$server->getProtocol()->hasChallenge()) {
@@ -204,8 +142,8 @@ class Query
             }
 
             // Write protocol challenge to socket.
-            $challengePackage = $server->getProtocol()->getPackage(ProtocolInterface::PACKET_CHALLENGE);
-            $this->writeSocket($socket, $challengePackage);
+            $challengePackage = $server->getProtocol()->getPackage(ProtocolInterface::PACKAGE_CHALLENGE);
+            $socket->write($challengePackage);
 
             // Do stream query to extract server challenge.
             if (!$rawResponses = $this->doStreamQuery($socket)) {
@@ -213,13 +151,15 @@ class Query
             }
 
             // Remove challenge package from response.
-            $data = new Buffer(implode(array: $rawResponses));
-            $server->getProtocol()->updatePackagesBasedOnChallengePackageResponse($data);
+            $data = new Buffer(implode('', $rawResponses));
+            $server->getProtocol()->updateQueryPackages($data);
 
             // Do query.
-            $response[$fullAddress] = $this->doQuery($socket, $server);
+            $responses              = $this->doQuery($socket, $server);
+            $response[$fullAddress] = $server->getProtocol()->handleResponse($responses);
 
-            $this->closeSocket($socket);
+            // Close socket.
+            $socket->close();
         }
 
         return $response;

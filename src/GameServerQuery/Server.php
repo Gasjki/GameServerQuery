@@ -63,11 +63,11 @@ class Server
         }
 
         $this->protocol  = new $protocol;
-        $this->ipAddress = DNSResolveHelper::resolveAddress($ipAddress);
+        $this->ipAddress = DNSResolveHelper::resolveAddress(trim($ipAddress));
 
         if (!filter_var($port, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1000, 'max_range' => 99999]])) {
             throw new \InvalidArgumentException(
-                sprintf('Provided port (%d) is too lower / higher. You need to provide a port between 1000 and 99999.', $port)
+                sprintf('Provided port ("%d") is too lower / higher. You need to provide a port between 1000 and 99999.', $port)
             );
         }
 
@@ -76,7 +76,7 @@ class Server
         if ($queryPort || $this->protocol->isQueryPortMandatory()) {
             if (!filter_var($queryPort, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1000, 'max_range' => 99999]])) {
                 throw new \InvalidArgumentException(
-                    sprintf('Provided query port (%d) is too lower / higher. You need to provide a port between 1000 and 99999.', $queryPort)
+                    sprintf('Provided query port ("%d") is too lower / higher. You need to provide a port between 1000 and 99999.', $queryPort)
                 );
             }
 

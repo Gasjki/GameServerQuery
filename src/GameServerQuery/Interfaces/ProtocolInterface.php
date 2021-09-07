@@ -15,16 +15,16 @@ interface ProtocolInterface
     public const TRANSPORT_SSL = 'ssl';
     public const TRANSPORT_TLS = 'tls';
 
-    public const PACKET_ALL       = 'all'; // Some protocols allow all data to be sent back in one call.
-    public const PACKET_BASIC     = 'basic';
-    public const PACKET_CHALLENGE = 'challenge';
-    public const PACKET_CHANNELS  = 'channels'; // Voice servers (soon)
-    public const PACKET_DETAILS   = 'details';
-    public const PACKET_INFO      = 'info';
-    public const PACKET_PLAYERS   = 'players';
-    public const PACKET_STATUS    = 'status';
-    public const PACKET_RULES     = 'rules';
-    public const PACKET_VERSION   = 'version';
+    public const PACKAGE_ALL       = 'all'; // Some protocols allow all data to be sent back in one call.
+    public const PACKAGE_BASIC     = 'basic';
+    public const PACKAGE_CHALLENGE = 'challenge';
+    public const PACKAGE_CHANNELS  = 'channels'; // Voice servers (soon)
+    public const PACKAGE_DETAILS   = 'details';
+    public const PACKAGE_INFO      = 'info';
+    public const PACKAGE_PLAYERS   = 'players';
+    public const PACKAGE_STATUS    = 'status';
+    public const PACKAGE_RULES     = 'rules';
+    public const PACKAGE_VERSION   = 'version';
 
     /**
      * Calculate query port.
@@ -57,11 +57,34 @@ interface ProtocolInterface
     public function isQueryPortMandatory(): bool;
 
     /**
+     * Checks if current protocol has a challenge package.
+     *
+     * @return bool
+     */
+    public function hasChallenge(): bool;
+
+    /**
      * Update packages based on challenge package response.
      *
      * @param Buffer $buffer
      */
-    public function updatePackagesBasedOnChallengePackageResponse(Buffer $buffer): void;
+    public function updateQueryPackages(Buffer $buffer): void;
+
+    /**
+     * Apply challenge to current packages.
+     *
+     * @param string $challenge
+     */
+    public function applyChallenge(string $challenge): void;
+
+    /**
+     * Returns package.
+     *
+     * @param string $packageName
+     *
+     * @return string
+     */
+    public function getPackage(string $packageName): string;
 
     /**
      * Returns all packages excepting those given as argument.

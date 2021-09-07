@@ -87,7 +87,7 @@ abstract class AbstractFilter implements FilterInterface
             // Empty array provided. Filter all information for the current section.
             if (!count($values)) {
                 foreach ($this->response[$section] as $key => $value) {
-                    $this->response[$section][$key] = call_user_func([$this, self::$filterName], $value);
+                    $this->response[$section][$key] = call_user_func([$this, static::$filterName], $value);
                 }
 
                 continue;
@@ -103,7 +103,7 @@ abstract class AbstractFilter implements FilterInterface
                             );
                         }
 
-                        $this->response[$section][$key][$value] = call_user_func([$this, self::$filterName], $row[$value]);
+                        $this->response[$section][$key][$value] = call_user_func([$this, static::$filterName], $row[$value]);
                     }
 
                     continue;
@@ -113,7 +113,7 @@ abstract class AbstractFilter implements FilterInterface
                     continue;
                 }
 
-                $this->response[$section][$value] = call_user_func([$this, self::$filterName], $this->response[$section][$value]);
+                $this->response[$section][$value] = call_user_func([$this, static::$filterName], $this->response[$section][$value]);
             }
         }
 

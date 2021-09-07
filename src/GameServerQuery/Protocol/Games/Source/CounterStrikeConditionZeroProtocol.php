@@ -5,10 +5,10 @@ namespace GameServerQuery\Protocol\Games\Source;
 use GameServerQuery\Protocol\Types\SourceProtocol;
 
 /**
- * Class CounterStrike16Protocol
+ * Class CounterStrikeConditionZeroProtocol
  * @package GameServerQuery\Protocol\Games\Source
  */
-class CounterStrike16Protocol extends SourceProtocol
+class CounterStrikeConditionZeroProtocol extends SourceProtocol
 {
     /**
      * @inheritDoc

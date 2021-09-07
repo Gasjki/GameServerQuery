@@ -15,7 +15,6 @@ class Result
 
     // General - subcategories.
     public const GENERAL_ACTIVE_SUBCATEGORY         = 'active';
-    public const GENERAL_APPLICATION_SUBCATEGORY    = 'application';
     public const GENERAL_HOSTNAME_SUBCATEGORY       = 'hostname';
     public const GENERAL_MAP_SUBCATEGORY            = 'map';
     public const GENERAL_VERSION_SUBCATEGORY        = 'version';
@@ -45,7 +44,6 @@ class Result
     // GENERAL - subcategories list.
     public const GENERAL_SUBCATEGORY_LIST = [
         self::GENERAL_ACTIVE_SUBCATEGORY,
-        self::GENERAL_APPLICATION_SUBCATEGORY,
         self::GENERAL_HOSTNAME_SUBCATEGORY,
         self::GENERAL_MAP_SUBCATEGORY,
         self::GENERAL_VERSION_SUBCATEGORY,
@@ -81,11 +79,10 @@ class Result
             $this->result = $this->result->getResult();
         }
 
-        $this->addAllSections(); // Add all sections by default.
-
         if (!count($this->result)) {
+            $this->addAllSections(); // Add all sections by default.
+
             $this->addInformation(Result::GENERAL_ACTIVE_SUBCATEGORY, false);
-            $this->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, null);
             $this->addInformation(Result::GENERAL_HOSTNAME_SUBCATEGORY, null);
             $this->addInformation(Result::GENERAL_MAP_SUBCATEGORY, null);
             $this->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, 0);
@@ -227,7 +224,7 @@ class Result
     /**
      * @inheritDoc
      */
-    public function addRule(string $key, string $value): Result
+    public function addRule(string $key, mixed $value): Result
     {
         // Add section if not exists.
         $this->addSection(self::RULES_CATEGORY);

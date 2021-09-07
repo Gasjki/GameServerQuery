@@ -62,11 +62,15 @@
     "php": ">=8.0",
     "ext-bz2": "*",
     "ext-json": "*",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "ext-simplexml": "*"
   },
   "autoload": {
     "psr-4": {
       "GameServerQuery\\": "src/GameServerQuery/"
     }
+  },
+  "require-dev": {
+    "symfony/var-dumper": "^5.3"
   }
 }

@@ -37,36 +37,38 @@ class XMLFormatter extends AbstractFormatter
 
             // Information.
             $information = $server->addChild(Result::GENERAL_CATEGORY);
-            $information
-                ->addChild(Result::GENERAL_ACTIVE_SUBCATEGORY, $data[Result::GENERAL_ACTIVE_SUBCATEGORY])
-                ->addChild(Result::GENERAL_APPLICATION_SUBCATEGORY, $data[Result::GENERAL_APPLICATION_SUBCATEGORY])
-                ->addChild(Result::GENERAL_HOSTNAME_SUBCATEGORY, $data[Result::GENERAL_HOSTNAME_SUBCATEGORY])
-                ->addChild(Result::GENERAL_MAP_SUBCATEGORY, $data[Result::GENERAL_MAP_SUBCATEGORY])
-                ->addChild(Result::GENERAL_VERSION_SUBCATEGORY, $data[Result::GENERAL_VERSION_SUBCATEGORY])
-                ->addChild(Result::GENERAL_BOTS_SUBCATEGORY, $data[Result::GENERAL_BOTS_SUBCATEGORY])
-                ->addChild(Result::GENERAL_DEDICATED_SUBCATEGORY, $data[Result::GENERAL_DEDICATED_SUBCATEGORY])
-                ->addChild(Result::GENERAL_OS_SUBCATEGORY, $data[Result::GENERAL_OS_SUBCATEGORY])
-                ->addChild(Result::GENERAL_SLOTS_SUBCATEGORY, $data[Result::GENERAL_SLOTS_SUBCATEGORY])
-                ->addChild(self::convertKey(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY), $data[Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY])
-                ->addChild(Result::GENERAL_PASSWORD_SUBCATEGORY, $data[Result::GENERAL_PASSWORD_SUBCATEGORY]);
+            $general     = $data[Result::GENERAL_CATEGORY];
+
+            $information->addChild(Result::GENERAL_ACTIVE_SUBCATEGORY, strval(intval($general[Result::GENERAL_ACTIVE_SUBCATEGORY])));
+            $information->addChild(Result::GENERAL_APPLICATION_SUBCATEGORY, $general[Result::GENERAL_APPLICATION_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_HOSTNAME_SUBCATEGORY, $general[Result::GENERAL_HOSTNAME_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_MAP_SUBCATEGORY, $general[Result::GENERAL_MAP_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_VERSION_SUBCATEGORY, $general[Result::GENERAL_VERSION_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_BOTS_SUBCATEGORY, strval($general[Result::GENERAL_BOTS_SUBCATEGORY]));
+            $information->addChild(Result::GENERAL_DEDICATED_SUBCATEGORY, $general[Result::GENERAL_DEDICATED_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_OS_SUBCATEGORY, $general[Result::GENERAL_OS_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_SLOTS_SUBCATEGORY, strval($general[Result::GENERAL_SLOTS_SUBCATEGORY]));
+            $information->addChild(self::convertKey(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY), strval($general[Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY]));
+            $information->addChild(Result::GENERAL_PASSWORD_SUBCATEGORY, strval(intval($general[Result::GENERAL_PASSWORD_SUBCATEGORY])));
 
             // Players.
             $players = $xml->addChild(Result::PLAYERS_CATEGORY);
-            foreach ($data[Result::PLAYERS_CATEGORY] as $key => $player) {
-                $player = $players->addChild($key);
-                $player
-                    ->addChild(Result::PLAYERS_NAME_SUBCATEGORY, $player[Result::PLAYERS_NAME_SUBCATEGORY])
-                    ->addChild(Result::PLAYERS_SCORE_SUBCATEGORY, $player[Result::PLAYERS_SCORE_SUBCATEGORY])
-                    ->addChild(self::convertKey(Result::PLAYERS_ONLINE_TIME_SUBCATEGORY), $player[Result::PLAYERS_ONLINE_TIME_SUBCATEGORY]);
+            foreach ($data[Result::PLAYERS_CATEGORY] as $player) {
+                $player    = array_map('strval', $player);
+                $playerXml = $players->addChild('player');
+
+                $playerXml->addChild(Result::PLAYERS_NAME_SUBCATEGORY, $player[Result::PLAYERS_NAME_SUBCATEGORY]);
+                $playerXml->addChild(Result::PLAYERS_SCORE_SUBCATEGORY, $player[Result::PLAYERS_SCORE_SUBCATEGORY]);
+                $playerXml->addChild(self::convertKey(Result::PLAYERS_ONLINE_TIME_SUBCATEGORY), $player[Result::PLAYERS_ONLINE_TIME_SUBCATEGORY]);
             }
 
             // Rules.
             $rules = $xml->addChild(Result::RULES_CATEGORY);
-            foreach ($data[Result::RULES_CATEGORY] as $key => $rule) {
-                $rule = $rules->addChild($key);
-                $rule
-                    ->addChild(Result::RULES_NAME_SUBCATEGORY, $rule[Result::RULES_NAME_SUBCATEGORY])
-                    ->addChild(Result::RULES_VALUE_SUBCATEGORY, $rule[Result::RULES_VALUE_SUBCATEGORY]);
+            foreach ($data[Result::RULES_CATEGORY] as $rule => $value) {
+                $ruleXml = $rules->addChild('rule');
+
+                $ruleXml->addChild(Result::RULES_NAME_SUBCATEGORY, $rule);
+                $ruleXml->addChild(Result::RULES_VALUE_SUBCATEGORY, $value);
             }
         }
 

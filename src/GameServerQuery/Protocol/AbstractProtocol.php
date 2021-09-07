@@ -62,10 +62,6 @@ abstract class AbstractProtocol implements ProtocolInterface
         if (!$this->packages) {
             throw new \InvalidArgumentException('You need to provide at least one query package!');
         }
-
-        if (!$this->responses) {
-            throw new \InvalidArgumentException('You need to provide at least one socket response!');
-        }
     }
 
     /**
@@ -103,6 +99,22 @@ abstract class AbstractProtocol implements ProtocolInterface
     /**
      * @inheritDoc
      */
+    public function hasChallenge(): bool
+    {
+        return array_key_exists(ProtocolInterface::PACKAGE_CHALLENGE, $this->packages);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPackage(string $packageName): string
+    {
+        return $this->packages[$packageName];
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getAllPackagesExcept(array|string $exceptions): array
     {
         $data = [];
@@ -123,5 +135,15 @@ abstract class AbstractProtocol implements ProtocolInterface
         }
 
         return $data;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function applyChallenge(string $challenge): void
+    {
+        foreach ($this->packages as $type => $package) {
+            $this->packages[$type] = sprintf($package, $challenge);
+        }
     }
 }
