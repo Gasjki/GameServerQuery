@@ -2,12 +2,17 @@
 
 Current version: **1.0.0**
 
-### [Inspired by GameQ by AustinB](https://github.com/Austinb/GameQ)
+### [Inspiration: GameQ by AustinB](https://github.com/Austinb/GameQ)
 
 This script is an updated version of [GameQ](https://github.com/Austinb/GameQ) script created by AustinB. I recommend accessing his repository
 and give him a beer. He deserves it!<br /><br />
 I decided to create this repository for my next project. Compared to the original script,
-this one is more configurable and you can create new protocols on demand without being necessary to submit them to this script.
+this one is more configurable.
+
+### Good to know
+
+At this moment, only Source games are supported by this library. I'm working on supporting all games that are
+currently supported by GameQ.
 
 ### Requirements
 - PHP 8.0+

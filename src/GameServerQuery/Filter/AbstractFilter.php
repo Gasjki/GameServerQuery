@@ -20,6 +20,20 @@ abstract class AbstractFilter implements FilterInterface
     protected static string $filterName = '';
 
     /**
+     * Server response to be filtered.
+     *
+     * @var array
+     */
+    protected array $response = [];
+
+    /**
+     * Filter options.
+     *
+     * @var array
+     */
+    protected array $options = [];
+
+    /**
      * Sections which must be parsed by the filter.
      *
      * @var array
@@ -39,7 +53,7 @@ abstract class AbstractFilter implements FilterInterface
      * @param array $response
      * @param array $options
      */
-    public function __construct(protected array $response, protected array $options = [])
+    public function __construct(array $response, array $options = [])
     {
         if (!method_exists($this, static::$filterName)) {
             throw new \BadMethodCallException(
@@ -47,6 +61,8 @@ abstract class AbstractFilter implements FilterInterface
             );
         }
 
+        $this->response  = $response;
+        $this->options   = $options;
         $this->protocols = $options['protocols'] ?? [];
         $this->sections  = $options['sections'] ?? [];
     }
@@ -66,7 +82,7 @@ abstract class AbstractFilter implements FilterInterface
             /** @var ProtocolInterface $serverProtocol */
             $serverProtocol     = $this->response[Result::GENERAL_CATEGORY][Result::GENERAL_APPLICATION_SUBCATEGORY];
             $supportedProtocols = array_filter($this->protocols, function ($protocol) use ($serverProtocol) {
-                return is_subclass_of($serverProtocol, $protocol);
+                return is_subclass_of($serverProtocol, $protocol) || is_a($serverProtocol, $protocol);
             });
 
             if (!count($supportedProtocols)) {

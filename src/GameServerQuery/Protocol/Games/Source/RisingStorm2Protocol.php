@@ -12,10 +12,10 @@ class RisingStorm2Protocol extends SourceProtocol
 {
     /**
      * @inheritDoc
+     * @Note Query port is always 27015.
      */
     public function calculateQueryPort(int $port): int
     {
-        // Query port is always 27015.
         return 27015;
     }
 }

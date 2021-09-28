@@ -58,7 +58,7 @@ class Server
     {
         if (!in_array(ProtocolInterface::class, class_implements($protocol))) {
             throw new \Exception(
-                sprintf('Your protocol class (%s) does not implement ProtocolInterface.', $protocol)
+                sprintf('"%s" does not implement ProtocolInterface.', $protocol)
             );
         }
 

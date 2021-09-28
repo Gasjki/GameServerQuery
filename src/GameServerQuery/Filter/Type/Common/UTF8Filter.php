@@ -32,6 +32,6 @@ class UTF8Filter extends AbstractFilter
 
         $text = preg_replace('/[\x00-\x1f]/', '', $text);
 
-        return mb_convert_encoding(trim($text), 'UTF-8');
+        return mb_convert_encoding($text, 'UTF-8');
     }
 }

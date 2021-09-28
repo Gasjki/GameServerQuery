@@ -18,13 +18,13 @@ abstract class SourceProtocol extends AbstractProtocol
     /**
      * Protocol packages.
      *
-     * Packages to be send to socket.
+     * Packages to be sent to socket.
      *
      * @var array
      */
     protected array $packages = [
         self::PACKAGE_CHALLENGE => "\xFF\xFF\xFF\xFF\x56\x00\x00\x00\x00",
-        self::PACKAGE_DETAILS   => "\xFF\xFF\xFF\xFFTSource Engine Query\x00%s",
+        self::PACKAGE_DETAILS   => "\xFF\xFF\xFF\xFFTSource Engine Query\x00",
         self::PACKAGE_PLAYERS   => "\xFF\xFF\xFF\xFF\x55%s",
         self::PACKAGE_RULES     => "\xFF\xFF\xFF\xFF\x56%s",
     ];
@@ -229,7 +229,10 @@ abstract class SourceProtocol extends AbstractProtocol
             unset($buffer, $responseType);
         }
 
-        return $result->getResult();
+        // Set application type.
+        $result->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, get_class($this));
+
+        return $result->toArray();
     }
 
     /**
@@ -402,17 +405,17 @@ abstract class SourceProtocol extends AbstractProtocol
 
         // No data to be parsed.
         if (!count($responses)) {
-            return $result->getResult();
+            return $result->toArray();
         }
 
         // Extract packets.
         if (!$packets = $this->extractPackets($responses)) {
-            return $result->getResult();
+            return $result->toArray();
         }
 
         // Process packets.
         $this->processPackets($result, $packets);
 
-        return $result->getResult();
+        return $result->toArray();
     }
 }

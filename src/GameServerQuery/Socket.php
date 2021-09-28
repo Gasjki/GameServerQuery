@@ -46,7 +46,7 @@ class Socket
 
         if (!$this->socket) {
             throw new \Exception(
-                sprintf("Socket was not created for server (%s).", $server->getFullAddressWithQueryPort())
+                sprintf('Socket was not created for "%s".', $server->getFullAddressWithQueryPort())
             );
         }
 
@@ -71,7 +71,7 @@ class Socket
     /**
      * Returns socket resource.
      *
-     * @return resource|null
+     * @return mixed
      */
     public function getSocket(): mixed
     {

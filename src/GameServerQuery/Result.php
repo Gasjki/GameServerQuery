@@ -14,6 +14,7 @@ class Result
     public const RULES_CATEGORY   = 'rules';
 
     // General - subcategories.
+    public const GENERAL_APPLICATION_SUBCATEGORY    = 'application';
     public const GENERAL_ACTIVE_SUBCATEGORY         = 'active';
     public const GENERAL_HOSTNAME_SUBCATEGORY       = 'hostname';
     public const GENERAL_MAP_SUBCATEGORY            = 'map';
@@ -43,6 +44,7 @@ class Result
 
     // GENERAL - subcategories list.
     public const GENERAL_SUBCATEGORY_LIST = [
+        self::GENERAL_APPLICATION_SUBCATEGORY,
         self::GENERAL_ACTIVE_SUBCATEGORY,
         self::GENERAL_HOSTNAME_SUBCATEGORY,
         self::GENERAL_MAP_SUBCATEGORY,
@@ -65,7 +67,7 @@ class Result
     // RULES - subcategories list.
     public const RULES_SUBCATEGORY_LIST = [
         self::RULES_NAME_SUBCATEGORY,
-        self::RULES_VALUE_SUBCATEGORY
+        self::RULES_VALUE_SUBCATEGORY,
     ];
 
     /**
@@ -76,12 +78,13 @@ class Result
     public function __construct(protected self|array $result = [])
     {
         if ($this->result instanceof self) {
-            $this->result = $this->result->getResult();
+            $this->result = $this->result->toArray();
         }
 
         if (!count($this->result)) {
             $this->addAllSections(); // Add all sections by default.
 
+            $this->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, null);
             $this->addInformation(Result::GENERAL_ACTIVE_SUBCATEGORY, false);
             $this->addInformation(Result::GENERAL_HOSTNAME_SUBCATEGORY, null);
             $this->addInformation(Result::GENERAL_MAP_SUBCATEGORY, null);
@@ -122,9 +125,9 @@ class Result
             return $this;
         }
 
-        if (!$this->isValidSection($name)) {
+        if (!in_array($name, self::RESULT_CATEGORIES)) {
             throw new \InvalidArgumentException(
-                sprintf('Invalid section name. Available sections: %s.', implode(', ', self::RESULT_CATEGORIES))
+                sprintf('Invalid section name given: "%s". Available sections: %s.', $name, implode(', ', self::RESULT_CATEGORIES))
             );
         }
 
@@ -143,9 +146,14 @@ class Result
      */
     public function addInformation(string $name, mixed $value = null): Result
     {
+        if (!in_array($name, self::GENERAL_SUBCATEGORY_LIST)) {
+            throw new \InvalidArgumentException(
+                sprintf("Invalid information key given: %s. Available keys: %s", $name, implode(', ', self::GENERAL_SUBCATEGORY_LIST))
+            );
+        }
+
         // Add section if not exists.
         $this->addSection(self::GENERAL_CATEGORY);
-
 
         $this->result[self::GENERAL_CATEGORY][$name] = $value;
 
@@ -158,16 +166,13 @@ class Result
      * @param string $name
      *
      * @return mixed
+     * @throws \Exception
      */
     public function getInformation(string $name): mixed
     {
-        if (!array_key_exists($name, $this->result[self::GENERAL_CATEGORY])) {
-            throw new \InvalidArgumentException(
-                sprintf('[ERROR] %s was not found. Available keys: %s', $name, implode(', ', array_keys($this->result[self::GENERAL_CATEGORY])))
+        return $this->result[self::GENERAL_CATEGORY][$name] ?? throw new \Exception(
+                sprintf('Information key "%s" was not found. Available keys: %s', $name, implode(', ', array_keys($this->result[self::GENERAL_CATEGORY])))
             );
-        }
-
-        return $this->result[self::GENERAL_CATEGORY][$name];
     }
 
     /**
@@ -184,12 +189,8 @@ class Result
         // Add section if not exists.
         $this->addSection(self::PLAYERS_CATEGORY);
 
-        if (array_key_exists($name, $this->result[self::PLAYERS_CATEGORY])) {
-            return $this;
-        }
-
         if (empty(trim($name))) {
-            $name  = null; // Player is in the process of connection.
+            $name  = null; // Player is connection. We don't have any information yet.
             $score = 0;
             $time  = 0;
         }
@@ -212,17 +213,16 @@ class Result
      */
     public function getPlayer(string $name): array
     {
-        $key = array_search($name, array_column($this->result[self::PLAYERS_CATEGORY], self::PLAYERS_NAME_SUBCATEGORY));
-
-        if (!$key) {
-            return [];
-        }
-
-        return $this->result[self::PLAYERS_CATEGORY][$name];
+        return $this->result[self::PLAYERS_CATEGORY][$name] ?? [];
     }
 
     /**
-     * @inheritDoc
+     * Add new rule.
+     *
+     * @param string $key
+     * @param mixed  $value
+     *
+     * @return $this
      */
     public function addRule(string $key, mixed $value): Result
     {
@@ -235,15 +235,15 @@ class Result
     }
 
     /**
-     * @inheritDoc
+     * Return rule by key.
+     *
+     * @param string $key
+     *
+     * @return mixed
      */
     public function getRule(string $key): mixed
     {
-        if (!array_key_exists($key, $this->result[self::RULES_CATEGORY])) {
-            return null;
-        }
-
-        return $this->result[self::RULES_CATEGORY][$key];
+        return $this->result[self::RULES_CATEGORY][$key] ?? null;
     }
 
     /**
@@ -259,23 +259,11 @@ class Result
     }
 
     /**
-     * Check if given section name is valid and can be used.
-     *
-     * @param string $name
-     *
-     * @return bool
-     */
-    protected function isValidSection(string $name): bool
-    {
-        return in_array($name, self::RESULT_CATEGORIES);
-    }
-
-    /**
      * Returns result array.
      *
      * @return array
      */
-    public function getResult(): array
+    public function toArray(): array
     {
         return $this->result;
     }

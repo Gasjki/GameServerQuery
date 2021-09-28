@@ -76,11 +76,11 @@ class GameServerQuery
     /**
      * Set configuration.
      *
-     * @param Config $config
+     * @param Config|null $config
      *
      * @return $this
      */
-    public function config(Config $config): GameServerQuery
+    public function config(?Config $config = null): GameServerQuery
     {
         $this->config = $config;
 
@@ -134,13 +134,14 @@ class GameServerQuery
 
     /**
      * Set formatter class.
+     *
      * @throws \Exception
      */
     public function formatter(string $formatter): GameServerQuery
     {
         if (!in_array(FormatterInterface::class, class_implements($formatter))) {
             throw new \Exception(
-                sprintf('Your formatter class (%s) does not implement FormatterInterface.', $formatter)
+                sprintf('"%s" does not implement FormatterInterface.', $formatter)
             );
         }
 
@@ -167,9 +168,7 @@ class GameServerQuery
         }
 
         // Set configuration and query server(-s).
-        $results = (new Query($this->servers))
-            ->config($this->config)
-            ->execute();
+        $results = (new Query($this->servers, $this->config))->execute();
 
         // Apply filters.
         $servers = [];
@@ -177,8 +176,7 @@ class GameServerQuery
         foreach ($results as $fullAddress => $response) {
             foreach ($this->filters as $filter => $options) {
                 /** @var FilterInterface $filter */
-                $filter                = new $filter($response, $options);
-                $servers[$fullAddress] = $filter->apply();
+                $servers[$fullAddress] = (new $filter($response, $options))->apply();
             }
         }
 

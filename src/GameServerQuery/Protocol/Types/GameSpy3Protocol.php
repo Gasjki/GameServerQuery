@@ -15,7 +15,7 @@ abstract class GameSpy3Protocol extends AbstractProtocol
     /**
      * Protocol packages.
      *
-     * Packages to be send to socket.
+     * Packages to be sent to socket.
      *
      * @var array
      */
@@ -38,14 +38,13 @@ abstract class GameSpy3Protocol extends AbstractProtocol
      */
     public function updateQueryPackages(Buffer $buffer): void
     {
-        $challenge       = substr(preg_replace("/[^0-9\-]/si", "", $buffer->getBuffer()), 1);
-        $challengeResult = '';
+        $challenge = substr(preg_replace("/[^0-9\-]/si", "", $buffer->getBuffer()), 1);
 
         if ($challenge) {
             $challengeResult = sprintf("%c%c%c%c", ($challenge >> 24), ($challenge >> 16), ($challenge >> 8), ($challenge >> 0));
         }
 
-        $this->applyChallenge($challengeResult);
+        $this->applyChallenge($challengeResult ?? '');
     }
 
     /**
@@ -229,7 +228,7 @@ abstract class GameSpy3Protocol extends AbstractProtocol
             $this->processPlayers($buffer, $result);
         }
 
-        return $result->getResult();
+        return $result->toArray();
     }
 
     /**
@@ -242,17 +241,17 @@ abstract class GameSpy3Protocol extends AbstractProtocol
 
         // No data to be parsed.
         if (!count($responses)) {
-            return $result->getResult();
+            return $result->toArray();
         }
 
         // Extract packets.
         if (!$packets = $this->extractPackets($responses)) {
-            return $result->getResult();
+            return $result->toArray();
         }
 
         // Process packets.
         $this->processPackets($result, $packets);
 
-        return $result->getResult();
+        return $result->toArray();
     }
 }

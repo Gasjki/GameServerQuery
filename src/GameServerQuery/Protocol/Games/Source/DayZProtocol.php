@@ -70,7 +70,7 @@ class DayZProtocol extends SourceProtocol
         parent::processSourceInformation($temporaryBuffer, $result);
 
         // Get server version.
-        $buffer->skip(1); // Skip protocol
+        $buffer->skip(); // Skip protocol
         $buffer->readString(); // Skip hostname
         $buffer->readString(); // Skip map name
         $buffer->readString(); // Skip game_dir

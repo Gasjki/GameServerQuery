@@ -41,7 +41,7 @@ abstract class AbstractProtocol implements ProtocolInterface
     /**
      * Protocol packages.
      *
-     * Packages to be send to socket.
+     * Packages to be sent to socket.
      *
      * @var array
      */

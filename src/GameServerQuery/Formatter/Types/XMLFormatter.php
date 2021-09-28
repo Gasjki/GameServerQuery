@@ -40,7 +40,6 @@ class XMLFormatter extends AbstractFormatter
             $general     = $data[Result::GENERAL_CATEGORY];
 
             $information->addChild(Result::GENERAL_ACTIVE_SUBCATEGORY, strval(intval($general[Result::GENERAL_ACTIVE_SUBCATEGORY])));
-            $information->addChild(Result::GENERAL_APPLICATION_SUBCATEGORY, $general[Result::GENERAL_APPLICATION_SUBCATEGORY]);
             $information->addChild(Result::GENERAL_HOSTNAME_SUBCATEGORY, $general[Result::GENERAL_HOSTNAME_SUBCATEGORY]);
             $information->addChild(Result::GENERAL_MAP_SUBCATEGORY, $general[Result::GENERAL_MAP_SUBCATEGORY]);
             $information->addChild(Result::GENERAL_VERSION_SUBCATEGORY, $general[Result::GENERAL_VERSION_SUBCATEGORY]);
