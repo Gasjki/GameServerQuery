@@ -69,8 +69,5 @@
     "psr-4": {
       "GameServerQuery\\": "src/GameServerQuery/"
     }
-  },
-  "require-dev": {
-    "symfony/var-dumper": "^5.3"
   }
 }
