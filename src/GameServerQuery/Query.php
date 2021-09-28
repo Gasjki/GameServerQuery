@@ -110,7 +110,10 @@ class Query
 
         foreach ($this->servers as $fullAddress => $server) {
             // Set default response format.
-            $response[$fullAddress] = (new Result())->toArray();
+            $result = new Result();
+            $result->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, get_class($server->getProtocol()));
+
+            $response[$fullAddress] = $result->toArray();
 
             // Open socket for server.
             $socket = new Socket($server, $this->config->get('timeout', 3));

@@ -24,7 +24,7 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     protected array $packages = [
         self::PACKAGE_CHALLENGE => "\xFF\xFF\xFF\xFF\x56\x00\x00\x00\x00",
-        self::PACKAGE_DETAILS   => "\xFF\xFF\xFF\xFFTSource Engine Query\x00",
+        self::PACKAGE_DETAILS   => "\xFF\xFF\xFF\xFFTSource Engine Query\x00%s",
         self::PACKAGE_PLAYERS   => "\xFF\xFF\xFF\xFF\x55%s",
         self::PACKAGE_RULES     => "\xFF\xFF\xFF\xFF\x56%s",
     ];
@@ -229,7 +229,6 @@ abstract class SourceProtocol extends AbstractProtocol
             unset($buffer, $responseType);
         }
 
-        // Set application type.
         $result->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, get_class($this));
 
         return $result->toArray();
