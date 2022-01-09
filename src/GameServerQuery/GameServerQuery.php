@@ -18,7 +18,7 @@ class GameServerQuery
     /**
      * Current script version.
      */
-    private const VERSION = '1.0.0';
+    private const VERSION = '1.0.1';
 
     /**
      * GameServerQuery configuration.
