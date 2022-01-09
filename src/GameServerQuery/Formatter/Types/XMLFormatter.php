@@ -20,7 +20,7 @@ class XMLFormatter extends AbstractFormatter
      */
     private static function convertKey(string $key): string
     {
-        return str_replace('_', '-', $key);
+        return \str_replace('_', '-', $key);
     }
 
     /**
@@ -39,21 +39,24 @@ class XMLFormatter extends AbstractFormatter
             $information = $server->addChild(Result::GENERAL_CATEGORY);
             $general     = $data[Result::GENERAL_CATEGORY];
 
-            $information->addChild(Result::GENERAL_ACTIVE_SUBCATEGORY, strval(intval($general[Result::GENERAL_ACTIVE_SUBCATEGORY])));
+            $information->addChild(Result::GENERAL_ACTIVE_SUBCATEGORY, \strval(\intval($general[Result::GENERAL_ACTIVE_SUBCATEGORY])));
             $information->addChild(Result::GENERAL_HOSTNAME_SUBCATEGORY, $general[Result::GENERAL_HOSTNAME_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_IP_ADDRESS_SUBCATEGORY, $general[Result::GENERAL_IP_ADDRESS_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_PORT_SUBCATEGORY, $general[Result::GENERAL_PORT_SUBCATEGORY]);
+            $information->addChild(Result::GENERAL_QUERY_PORT_SUBCATEGORY, $general[Result::GENERAL_QUERY_PORT_SUBCATEGORY]);
             $information->addChild(Result::GENERAL_MAP_SUBCATEGORY, $general[Result::GENERAL_MAP_SUBCATEGORY]);
             $information->addChild(Result::GENERAL_VERSION_SUBCATEGORY, $general[Result::GENERAL_VERSION_SUBCATEGORY]);
-            $information->addChild(Result::GENERAL_BOTS_SUBCATEGORY, strval($general[Result::GENERAL_BOTS_SUBCATEGORY]));
+            $information->addChild(Result::GENERAL_BOTS_SUBCATEGORY, \strval($general[Result::GENERAL_BOTS_SUBCATEGORY]));
             $information->addChild(Result::GENERAL_DEDICATED_SUBCATEGORY, $general[Result::GENERAL_DEDICATED_SUBCATEGORY]);
             $information->addChild(Result::GENERAL_OS_SUBCATEGORY, $general[Result::GENERAL_OS_SUBCATEGORY]);
-            $information->addChild(Result::GENERAL_SLOTS_SUBCATEGORY, strval($general[Result::GENERAL_SLOTS_SUBCATEGORY]));
-            $information->addChild(self::convertKey(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY), strval($general[Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY]));
-            $information->addChild(Result::GENERAL_PASSWORD_SUBCATEGORY, strval(intval($general[Result::GENERAL_PASSWORD_SUBCATEGORY])));
+            $information->addChild(Result::GENERAL_SLOTS_SUBCATEGORY, \strval($general[Result::GENERAL_SLOTS_SUBCATEGORY]));
+            $information->addChild(self::convertKey(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY), \strval($general[Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY]));
+            $information->addChild(Result::GENERAL_PASSWORD_SUBCATEGORY, \strval(intval($general[Result::GENERAL_PASSWORD_SUBCATEGORY])));
 
             // Players.
             $players = $xml->addChild(Result::PLAYERS_CATEGORY);
             foreach ($data[Result::PLAYERS_CATEGORY] as $player) {
-                $player    = array_map('strval', $player);
+                $player    = \array_map('strval', $player);
                 $playerXml = $players->addChild('player');
 
                 $playerXml->addChild(Result::PLAYERS_NAME_SUBCATEGORY, $player[Result::PLAYERS_NAME_SUBCATEGORY]);

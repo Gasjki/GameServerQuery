@@ -2,6 +2,10 @@
 
 namespace GameServerQuery;
 
+use GameServerQuery\Exception\Result\InformationNotFoundException;
+use GameServerQuery\Exception\Result\PlayerNotFoundException;
+use GameServerQuery\Exception\Result\RuleNotFoundException;
+
 /**
  * Class Result
  * @package GameServerQuery
@@ -17,6 +21,9 @@ class Result
     public const GENERAL_APPLICATION_SUBCATEGORY    = 'application';
     public const GENERAL_ACTIVE_SUBCATEGORY         = 'active';
     public const GENERAL_HOSTNAME_SUBCATEGORY       = 'hostname';
+    public const GENERAL_IP_ADDRESS_SUBCATEGORY     = 'ip_address';
+    public const GENERAL_PORT_SUBCATEGORY           = 'port';
+    public const GENERAL_QUERY_PORT_SUBCATEGORY     = 'query_port';
     public const GENERAL_MAP_SUBCATEGORY            = 'map';
     public const GENERAL_VERSION_SUBCATEGORY        = 'version';
     public const GENERAL_BOTS_SUBCATEGORY           = 'bots';
@@ -47,6 +54,9 @@ class Result
         self::GENERAL_APPLICATION_SUBCATEGORY,
         self::GENERAL_ACTIVE_SUBCATEGORY,
         self::GENERAL_HOSTNAME_SUBCATEGORY,
+        self::GENERAL_IP_ADDRESS_SUBCATEGORY,
+        self::GENERAL_PORT_SUBCATEGORY,
+        self::GENERAL_QUERY_PORT_SUBCATEGORY,
         self::GENERAL_MAP_SUBCATEGORY,
         self::GENERAL_VERSION_SUBCATEGORY,
         self::GENERAL_BOTS_SUBCATEGORY,
@@ -81,7 +91,7 @@ class Result
             $this->result = $this->result->toArray();
         }
 
-        if (!count($this->result)) {
+        if (!\count($this->result)) {
             $this->addAllSections(); // Add all sections by default.
 
             $this->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, null);
@@ -101,7 +111,7 @@ class Result
     /**
      * Add all available categories.
      *
-     * @return $this
+     * @return Result
      */
     public function addAllSections(): Result
     {
@@ -117,17 +127,18 @@ class Result
      *
      * @param string $name
      *
-     * @return $this
+     * @return Result
+     * @throws \InvalidArgumentException
      */
     public function addSection(string $name): Result
     {
-        if (array_key_exists($name, $this->result)) {
+        if (\array_key_exists($name, $this->result)) {
             return $this;
         }
 
-        if (!in_array($name, self::RESULT_CATEGORIES)) {
+        if (!\in_array($name, self::RESULT_CATEGORIES)) {
             throw new \InvalidArgumentException(
-                sprintf('Invalid section name given: "%s". Available sections: %s.', $name, implode(', ', self::RESULT_CATEGORIES))
+                \sprintf('Invalid section name given: "%s". Available sections: %s.', $name, \implode(', ', self::RESULT_CATEGORIES))
             );
         }
 
@@ -142,13 +153,14 @@ class Result
      * @param string $name
      * @param mixed  $value
      *
-     * @return $this
+     * @return Result
+     * @throws \InvalidArgumentException
      */
     public function addInformation(string $name, mixed $value = null): Result
     {
-        if (!in_array($name, self::GENERAL_SUBCATEGORY_LIST)) {
+        if (!\in_array($name, self::GENERAL_SUBCATEGORY_LIST)) {
             throw new \InvalidArgumentException(
-                sprintf("Invalid information key given: %s. Available keys: %s", $name, implode(', ', self::GENERAL_SUBCATEGORY_LIST))
+                \sprintf("Invalid information key given: %s. Available keys: %s", $name, \implode(', ', self::GENERAL_SUBCATEGORY_LIST))
             );
         }
 
@@ -166,13 +178,29 @@ class Result
      * @param string $name
      *
      * @return mixed
-     * @throws \Exception
+     * @throws InformationNotFoundException
      */
     public function getInformation(string $name): mixed
     {
-        return $this->result[self::GENERAL_CATEGORY][$name] ?? throw new \Exception(
-                sprintf('Information key "%s" was not found. Available keys: %s', $name, implode(', ', array_keys($this->result[self::GENERAL_CATEGORY])))
+        if (!$this->hasInformation($name)) {
+            throw new InformationNotFoundException(
+                sprintf('Information key "%s" was not found. Available keys: %s', $name, \implode(', ', \array_keys($this->result[self::GENERAL_CATEGORY])))
             );
+        }
+
+        return $this->result[self::GENERAL_CATEGORY][$name];
+    }
+
+    /**
+     * Check if result has specific information.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasInformation(string $name): bool
+    {
+        return \array_key_exists($name, $this->result[self::GENERAL_CATEGORY]);
     }
 
     /**
@@ -182,14 +210,14 @@ class Result
      * @param int        $score
      * @param float|null $time
      *
-     * @return $this
+     * @return Result
      */
     public function addPlayer(string $name, int $score = 0, ?float $time = null): Result
     {
         // Add section if not exists.
         $this->addSection(self::PLAYERS_CATEGORY);
 
-        if (empty(trim($name))) {
+        if (empty(\trim($name))) {
             $name  = null; // Player is connection. We don't have any information yet.
             $score = 0;
             $time  = 0;
@@ -210,10 +238,27 @@ class Result
      * @param string $name
      *
      * @return array
+     * @throws PlayerNotFoundException
      */
     public function getPlayer(string $name): array
     {
-        return $this->result[self::PLAYERS_CATEGORY][$name] ?? [];
+        if (!$this->hasPlayer($name)) {
+            throw new PlayerNotFoundException(\sprintf('Player "%s" was not found!', $name));
+        }
+
+        return $this->result[self::PLAYERS_CATEGORY][$name];
+    }
+
+    /**
+     * Check if result has a specific player.
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasPlayer(string $name): bool
+    {
+        return \array_key_exists($name, $this->result[self::PLAYERS_CATEGORY]);
     }
 
     /**
@@ -222,7 +267,7 @@ class Result
      * @param string $key
      * @param mixed  $value
      *
-     * @return $this
+     * @return Result
      */
     public function addRule(string $key, mixed $value): Result
     {
@@ -240,10 +285,15 @@ class Result
      * @param string $key
      *
      * @return mixed
+     * @throws RuleNotFoundException
      */
     public function getRule(string $key): mixed
     {
-        return $this->result[self::RULES_CATEGORY][$key] ?? null;
+        if (!$this->hasRule($key)) {
+            throw new RuleNotFoundException(\sprintf('Rule "%s" was not found!', $key));
+        }
+
+        return $this->result[self::RULES_CATEGORY][$key];
     }
 
     /**
@@ -255,7 +305,7 @@ class Result
      */
     public function hasRule(string $key): bool
     {
-        return array_key_exists($key, $this->result[self::RULES_CATEGORY]);
+        return \array_key_exists($key, $this->result[self::RULES_CATEGORY]);
     }
 
     /**

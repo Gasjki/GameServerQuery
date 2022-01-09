@@ -101,49 +101,14 @@ abstract class AbstractProtocol implements ProtocolInterface
      */
     public function hasChallenge(): bool
     {
-        return array_key_exists(ProtocolInterface::PACKAGE_CHALLENGE, $this->packages);
+        return \array_key_exists(ProtocolInterface::PACKAGE_CHALLENGE, $this->packages);
     }
 
     /**
      * @inheritDoc
      */
-    public function getPackage(string $packageName): string
+    public function getPackage(string $packageType): string
     {
-        return $this->packages[$packageName];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAllPackagesExcept(array|string $exceptions): array
-    {
-        $data = [];
-
-        if (is_string($exceptions)) {
-            $data = $this->packages;
-            unset($data[$exceptions]);
-
-            return $data;
-        }
-
-        foreach ($this->packages as $package) {
-            if (in_array($package, $exceptions)) {
-                continue;
-            }
-
-            $data[] = $package;
-        }
-
-        return $data;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function applyChallenge(string $challenge): void
-    {
-        foreach ($this->packages as $type => $package) {
-            $this->packages[$type] = sprintf($package, $challenge);
-        }
+        return $this->packages[$packageType];
     }
 }

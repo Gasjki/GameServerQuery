@@ -13,52 +13,11 @@ use GameServerQuery\Result;
 class DayZProtocol extends SourceProtocol
 {
     /**
-     * Possible keys for parsing server rules.
-     *
-     * @var string[]
-     */
-    private array $possibleKeys = [
-        "\x01\v",
-        "\x02\v",
-        "\x03\v",
-        "\x04\v",
-        "\x05\v",
-        "\x06\v",
-        "\x07\v",
-        "\x08\v",
-        "\x09\v",
-        "\x10\v",
-        "\x11\v",
-        "\x12\v",
-        "\x13\v",
-        "\x14\v",
-        "\x15\v",
-        "\x16\v",
-        "\x17\v",
-        "\x18\v",
-        "\x19\v",
-        "\x20\v",
-        "\t\v",
-        "\n\v",
-        "\v\v",
-    ];
-
-    /**
      * @inheritDoc
      */
     public function calculateQueryPort(int $port): int
     {
-        /*
-         * Port layout:
-         * 2302 - 27016
-         * 2402 - 27017
-         * 2502 - 27018
-         * 2602 - 27019
-         * 2702 - 27020
-         * ...
-         */
-
-        return 27016 + (($port - 2302) / 100);
+        return (int) (27016 + ($port - 2302) / 100);
     }
 
     /**
@@ -97,17 +56,6 @@ class DayZProtocol extends SourceProtocol
      */
     protected function processRules(Buffer $buffer, Result $result): void
     {
-        parent::processRules($buffer, $result);
-
-        if (!$result[Result::RULES_CATEGORY]) {
-            return;
-        }
-
-        // Remove strange results.
-        for ($i = 0; $i < count($this->possibleKeys); $i++) {
-            if (array_key_exists($this->possibleKeys[$i], $result['rules'])) {
-                unset($result['rules'][$this->possibleKeys[$i]]);
-            }
-        }
+        // Server cvars list is a little bit too strange to be parsed.
     }
 }

@@ -2,6 +2,8 @@
 
 namespace GameServerQuery;
 
+use GameServerQuery\Exception\Socket\SocketCreationFailedException;
+
 /**
  * Class Socket
  * @package GameServerQuery
@@ -21,7 +23,7 @@ class Socket
      * @param Server $server
      * @param int    $timeout
      *
-     * @throws \Exception
+     * @throws SocketCreationFailedException
      */
     public function __construct(Server $server, int $timeout = 3)
     {
@@ -34,26 +36,25 @@ class Socket
      * @param Server $server
      * @param int    $timeout
      *
-     * @throws \Exception
+     * @return void
+     * @throws SocketCreationFailedException
      */
     protected function create(Server $server, int $timeout)
     {
-        $address = sprintf('%s://%s', $server->getProtocol()->getTransportSchema(), $server->getFullAddressWithQueryPort());
-        $context = stream_context_create(['socket' => ['bindto' => '0:0']]);
+        $address = \sprintf('%s://%s', $server->getProtocol()->getTransportSchema(), $server->getFullAddressWithQueryPort());
+        $context = \stream_context_create(['socket' => ['bindto' => '0:0']]);
 
         // Try to create socket.
-        $this->socket = @stream_socket_client($address, $errorNumber, $errorMessage, $timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->socket = @\stream_socket_client($address, $errorNumber, $errorMessage, $timeout, STREAM_CLIENT_CONNECT, $context);
 
         if (!$this->socket) {
-            throw new \Exception(
-                sprintf('Socket was not created for "%s".', $server->getFullAddressWithQueryPort())
-            );
+            throw new SocketCreationFailedException(sprintf('Socket was not created for "%s".', $server->getFullAddressWithQueryPort()));
         }
 
-        stream_set_timeout($this->socket, $timeout);
-        stream_set_blocking($this->socket, $server->getProtocol()->isBlockingMode());
-        stream_set_read_buffer($this->socket, 0);
-        stream_set_write_buffer($this->socket, 0);
+        \stream_set_timeout($this->socket, $timeout);
+        \stream_set_blocking($this->socket, $server->getProtocol()->isBlockingMode());
+        \stream_set_read_buffer($this->socket, 0);
+        \stream_set_write_buffer($this->socket, 0);
     }
 
     /**
@@ -65,13 +66,13 @@ class Socket
      */
     public function write(string $package): int|bool
     {
-        return fwrite($this->socket, $package);
+        return \fwrite($this->socket, $package);
     }
 
     /**
      * Returns socket resource.
      *
-     * @return mixed
+     * @return resource
      */
     public function getSocket(): mixed
     {
@@ -83,8 +84,8 @@ class Socket
      */
     public function close(): void
     {
-        if (is_resource($this->socket)) {
-            fclose($this->socket);
+        if (\is_resource($this->socket)) {
+            \fclose($this->socket);
             $this->socket = null;
         }
     }

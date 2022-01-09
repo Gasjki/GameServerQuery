@@ -11,19 +11,11 @@ use GameServerQuery\Interfaces\FormatterInterface;
 abstract class AbstractFormatter implements FormatterInterface
 {
     /**
-     * Server response.
-     *
-     * @var array
-     */
-    protected array $response = [];
-
-    /**
      * AbstractFormatter constructor.
      *
      * @param array $response
      */
-    public function __construct(array $response)
+    public function __construct(protected array $response = [])
     {
-        $this->response = $response;
     }
 }

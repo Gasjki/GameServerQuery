@@ -30,8 +30,8 @@ class JSONFormatter extends AbstractFormatter
      */
     public function format(): string
     {
-        if (!$result = json_encode($this->response)) {
-            throw new \Exception(self::$messages[json_last_error()]);
+        if (!$result = \json_encode($this->response)) {
+            throw new \Exception(self::$messages[\json_last_error()]);
         }
 
         return $result;

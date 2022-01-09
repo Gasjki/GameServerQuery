@@ -32,7 +32,8 @@ class Config
      *
      * @param int $timeout
      *
-     * @return $this
+     * @return Config
+     * @throws \InvalidArgumentException
      */
     public function timeout(int $timeout = 3): Config
     {
@@ -50,7 +51,8 @@ class Config
      *
      * @param int $streamTimeout
      *
-     * @return $this
+     * @return Config
+     * @throws \InvalidArgumentException
      */
     public function streamTimeout(int $streamTimeout = 200000): Config
     {
@@ -68,7 +70,8 @@ class Config
      *
      * @param int $writeWait
      *
-     * @return $this
+     * @return Config
+     * @throws \InvalidArgumentException
      */
     public function writeWait(int $writeWait = 500): Config
     {
@@ -86,7 +89,7 @@ class Config
      *
      * @param array $extraConfigs
      *
-     * @return $this
+     * @return Config
      */
     public function extraConfigs(array $extraConfigs): Config
     {
@@ -105,7 +108,7 @@ class Config
      */
     public function get(string $key, mixed $default = null): mixed
     {
-        if (!array_key_exists($key, $this->configs)) {
+        if (!\array_key_exists($key, $this->configs)) {
             return $default;
         }
 

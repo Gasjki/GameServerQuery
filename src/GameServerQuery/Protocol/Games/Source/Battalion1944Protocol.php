@@ -33,12 +33,12 @@ class Battalion1944Protocol extends SourceProtocol
 
         // Update online players.
         if($result->hasRule('bat_player_count_s')) {
-            $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, intval($result->getRule('bat_player_count_s')));
+            $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, (int) $result->getRule('bat_player_count_s'));
         }
 
         // Update server slots.
         if($result->hasRule('bat_max_players_i')) {
-            $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, intval($result->getRule('bat_max_players_i')));
+            $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, (int) $result->getRule('bat_max_players_i'));
         }
 
         // Update password from server rules.

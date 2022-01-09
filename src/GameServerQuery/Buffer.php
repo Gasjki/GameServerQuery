@@ -2,30 +2,16 @@
 
 namespace GameServerQuery;
 
+use GameServerQuery\Exception\Buffer\BufferException;
+
 /**
  * Class Buffer
  * @package GameServerQuery
  */
 class Buffer
 {
-    const NUMBER_TYPE_BIG_ENDIAN    = 'be';
-    const NUMBER_TYPE_LITTLE_ENDIAN = 'le';
-
-    /**
-     * Number type used to read integers.
-     *
-     * Default: Little Endian
-     *
-     * @var string
-     */
-    protected string $numberType = self::NUMBER_TYPE_LITTLE_ENDIAN;
-
-    /**
-     * The original data.
-     *
-     * @var string
-     */
-    protected string $data = '';
+    public const NUMBER_TYPE_BIG_ENDIAN    = 'be';
+    public const NUMBER_TYPE_LITTLE_ENDIAN = 'le';
 
     /**
      * The original data length.
@@ -47,11 +33,9 @@ class Buffer
      * @param string $data
      * @param string $numberType
      */
-    public function __construct(string $data, string $numberType = self::NUMBER_TYPE_LITTLE_ENDIAN)
+    public function __construct(protected string $data, protected string $numberType = self::NUMBER_TYPE_LITTLE_ENDIAN)
     {
-        $this->numberType = $numberType;
-        $this->data       = $data;
-        $this->length     = strlen($data);
+        $this->length = \strlen($data);
     }
 
     /**
@@ -83,7 +67,7 @@ class Buffer
      */
     public function getBuffer(): string
     {
-        return substr($this->data, $this->index);
+        return \substr($this->data, $this->index);
     }
 
     /**
@@ -93,7 +77,7 @@ class Buffer
      */
     public function getLength(): int
     {
-        return max($this->length - $this->index, 0);
+        return \max($this->length - $this->index, 0);
     }
 
     /**
@@ -102,15 +86,15 @@ class Buffer
      * @param int $length
      *
      * @return string
-     * @throws \Exception
+     * @throws BufferException
      */
     public function read(int $length = 1): string
     {
         if (($length + $this->index) > $this->length) {
-            throw new \Exception("Unable to read $length from buffer!");
+            throw new BufferException(sprintf("Unable to read '%d' from buffer!", $length));
         }
 
-        $string      = substr($this->data, $this->index, $length);
+        $string      = \substr($this->data, $this->index, $length);
         $this->index += $length;
 
         return $string;
@@ -126,9 +110,9 @@ class Buffer
      */
     public function readLastCharacter(): string
     {
-        $length       = strlen($this->data);
-        $string       = $this->data[strlen($this->data) - 1];
-        $this->data   = substr($this->data, 0, $length - 1);
+        $length       = \strlen($this->data);
+        $string       = $this->data[\strlen($this->data) - 1];
+        $this->data   = \substr($this->data, 0, $length - 1);
         $this->length -= 1;
 
         return $string;
@@ -143,7 +127,7 @@ class Buffer
      */
     public function lookAhead(int $length = 1): string
     {
-        return substr($this->data, $this->index, $length);
+        return \substr($this->data, $this->index, $length);
     }
 
     /**
@@ -165,7 +149,7 @@ class Buffer
      */
     public function jumpTo(int $index): void
     {
-        $this->index = min($index, $this->length - 1);
+        $this->index = \min($index, $this->length - 1);
     }
 
     /**
@@ -186,15 +170,15 @@ class Buffer
      * @param string $delimiter
      *
      * @return string
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readString(string $delimiter = "\x00"): string
     {
-        $length = strpos($this->data, $delimiter, min($this->index, $this->length));
+        $length = \strpos($this->data, $delimiter, \min($this->index, $this->length));
 
         // If it is not found then return whole buffer.
         if (false === $length) {
-            return $this->read(strlen($this->data) - $this->index);
+            return $this->read(\strlen($this->data) - $this->index);
         }
 
         // Read the string and remove the delimiter
@@ -211,29 +195,29 @@ class Buffer
      * @param bool $readOffset
      *
      * @return string
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readPascalString(int $offset = 0, bool $readOffset = false): string
     {
         $length = $this->readInt8();
-        $offset = max($length - $offset, 0);
+        $offset = \max($length - $offset, 0);
 
         if ($readOffset) {
             return $this->read($offset);
         }
 
-        return substr($this->read($length), 0, $offset);
+        return \substr($this->read($length), 0, $offset);
     }
 
     /**
      * Read an 8-bit unsigned integer.
      *
      * @return int
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readInt8(): int
     {
-        $int = unpack('Cint', $this->read());
+        $int = \unpack('Cint', $this->read());
 
         return $int['int'];
     }
@@ -242,11 +226,11 @@ class Buffer
      * Read and 8-bit signed integer.
      *
      * @return int
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readInt8Signed(): int
     {
-        $int = unpack('cint', $this->read());
+        $int = \unpack('cint', $this->read());
 
         return $int['int'];
     }
@@ -255,17 +239,17 @@ class Buffer
      * Read a 16-bit unsigned integer.
      *
      * @return int
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readInt16(): int
     {
         $type = match ($this->numberType) {
-            self::NUMBER_TYPE_BIG_ENDIAN => 'nint',
+            self::NUMBER_TYPE_BIG_ENDIAN    => 'nint',
             self::NUMBER_TYPE_LITTLE_ENDIAN => 'vint',
-            default => 'Sint',
+            default                         => 'Sint',
         };
 
-        $int = unpack($type, $this->read(2));
+        $int = \unpack($type, $this->read(2));
 
         return $int['int'];
     }
@@ -274,7 +258,7 @@ class Buffer
      * Read a 16-bit signed integer.
      *
      * @return mixed
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readInt16Signed(): int
     {
@@ -282,10 +266,10 @@ class Buffer
 
         // For big endian we need to reverse the bytes.
         if ($this->numberType === self::NUMBER_TYPE_BIG_ENDIAN) {
-            $string = strrev($string);
+            $string = \strrev($string);
         }
 
-        $int = unpack('sint', $string);
+        $int = \unpack('sint', $string);
 
         return $int['int'];
     }
@@ -294,17 +278,17 @@ class Buffer
      * Read a 32-bit unsigned integer.
      *
      * @return int
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readInt32(): int
     {
         $type = match ($this->numberType) {
-            self::NUMBER_TYPE_BIG_ENDIAN => 'Nint',
+            self::NUMBER_TYPE_BIG_ENDIAN    => 'Nint',
             self::NUMBER_TYPE_LITTLE_ENDIAN => 'Vint',
-            default => 'Lint',
+            default                         => 'Lint',
         };
 
-        $int = unpack($type, $this->read(4));
+        $int = \unpack($type, $this->read(4));
 
         return $int['int'];
     }
@@ -313,7 +297,7 @@ class Buffer
      * Read a 32-bit signed integer.
      *
      * @return int
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readInt32Signed(): int
     {
@@ -321,10 +305,10 @@ class Buffer
 
         // For big endian we need to reverse the bytes.
         if ($this->numberType === self::NUMBER_TYPE_BIG_ENDIAN) {
-            $string = strrev($string);
+            $string = \strrev($string);
         }
 
-        $int = unpack('lint', $string);
+        $int = \unpack('lint', $string);
 
         return $int['int'];
     }
@@ -333,17 +317,17 @@ class Buffer
      * Read a 64-bit unsigned integer.
      *
      * @return int
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readInt64(): int
     {
         $type = match ($this->numberType) {
-            self::NUMBER_TYPE_BIG_ENDIAN => 'Jint',
+            self::NUMBER_TYPE_BIG_ENDIAN    => 'Jint',
             self::NUMBER_TYPE_LITTLE_ENDIAN => 'Pint',
-            default => 'Qint',
+            default                         => 'Qint',
         };
 
-        $int64 = unpack($type, $this->read(8));
+        $int64 = \unpack($type, $this->read(8));
 
         return $int64['int'];
     }
@@ -352,7 +336,7 @@ class Buffer
      * Read a 32-bit float.
      *
      * @return float
-     * @throws \Exception
+     * @throws BufferException
      */
     public function readFloat32(): float
     {
@@ -360,10 +344,10 @@ class Buffer
 
         // For big endian we need to reverse the bytes.
         if ($this->numberType === self::NUMBER_TYPE_BIG_ENDIAN) {
-            $string = strrev($string);
+            $string = \strrev($string);
         }
 
-        $float = unpack('ffloat', $string);
+        $float = \unpack('ffloat', $string);
 
         return $float['float'];
     }

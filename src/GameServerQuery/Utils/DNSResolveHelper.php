@@ -2,6 +2,8 @@
 
 namespace GameServerQuery\Utils;
 
+use GameServerQuery\Exception\DNS\DNSToIPConversionException;
+
 /**
  * Class DNSResolveHelper
  * @package GameServerQuery\Utils
@@ -17,7 +19,7 @@ class DNSResolveHelper
      */
     public static function isIpAddress(string $address): bool
     {
-        return false !== filter_var($address, FILTER_VALIDATE_IP);
+        return false !== \filter_var($address, FILTER_VALIDATE_IP);
     }
 
     /**
@@ -29,7 +31,7 @@ class DNSResolveHelper
      */
     public static function convertDNSToIP(string $address): string
     {
-        return gethostbyname($address);
+        return \gethostbyname($address);
     }
 
     /**
@@ -38,7 +40,7 @@ class DNSResolveHelper
      * @param string $address
      *
      * @return string
-     * @throws \Exception
+     * @throws DNSToIPConversionException
      */
     public static function resolveAddress(string $address): string
     {
@@ -49,9 +51,7 @@ class DNSResolveHelper
         $ipAddress = self::convertDNSToIP($address);
 
         if ($address === $ipAddress) {
-            throw new \Exception(
-                sprintf('Could not convert your DNS address (%s) to IP address.', $address)
-            );
+            throw new DNSToIPConversionException(sprintf('Could not convert your DNS address (%s) to IP address.', $address));
         }
 
         return $ipAddress;

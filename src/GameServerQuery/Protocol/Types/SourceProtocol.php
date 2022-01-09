@@ -4,6 +4,7 @@ namespace GameServerQuery\Protocol\Types;
 
 use GameServerQuery\Buffer;
 use GameServerQuery\Protocol\AbstractProtocol;
+use GameServerQuery\Query\Types\SourceQuery;
 use GameServerQuery\Result;
 
 /**
@@ -23,10 +24,9 @@ abstract class SourceProtocol extends AbstractProtocol
      * @var array
      */
     protected array $packages = [
-        self::PACKAGE_CHALLENGE => "\xFF\xFF\xFF\xFF\x56\x00\x00\x00\x00",
-        self::PACKAGE_DETAILS   => "\xFF\xFF\xFF\xFFTSource Engine Query\x00%s",
-        self::PACKAGE_PLAYERS   => "\xFF\xFF\xFF\xFF\x55%s",
-        self::PACKAGE_RULES     => "\xFF\xFF\xFF\xFF\x56%s",
+        self::PACKAGE_INFO    => "\xFF\xFF\xFF\xFF\x54Source Engine Query\0%s", // A2S_INFO
+        self::PACKAGE_PLAYERS => "\xFF\xFF\xFF\xFF\x55%s", // A2S_PLAYER
+        self::PACKAGE_RULES   => "\xFF\xFF\xFF\xFF\x56%s", // A2S_RULE
     ];
 
     /**
@@ -57,21 +57,17 @@ abstract class SourceProtocol extends AbstractProtocol
     {
         parent::__construct();
 
-        if (!function_exists('bzdecompress')) {
+        if (!\function_exists('bzdecompress')) {
             throw new \Exception('Bzip2 is not installed! See https://www.php.net/manual/en/book.bzip2.php for more details!');
         }
     }
 
     /**
      * @inheritDoc
-     * @throws \Exception
      */
-    public function updateQueryPackages(Buffer $buffer): void
+    public function getQueryClass(): string
     {
-        $buffer->skip(5);
-        $challenge = $buffer->read(4);
-
-        $this->applyChallenge($challenge);
+        return SourceQuery::class;
     }
 
     /**
@@ -92,7 +88,7 @@ abstract class SourceProtocol extends AbstractProtocol
 
             // Check if we have a single packet.
             if (-1 === $header) {
-                if ($buffer->lookAhead() === "\x6d") {
+                if (\ord($buffer->lookAhead()) === SourceQuery::S2A_INFO_OLD) {
                     $this->engine = self::GOLD_SOURCE_ENGINE;
                 }
 
@@ -132,7 +128,7 @@ abstract class SourceProtocol extends AbstractProtocol
                 $packetNumber = $buffer->readInt8();
 
                 // We need to burn extra header (\xFF\xFF\xFF\xFF) on first loop.
-                if ($index === 0) {
+                if (0 === $index) {
                     $buffer->read(4);
                 }
 
@@ -151,18 +147,18 @@ abstract class SourceProtocol extends AbstractProtocol
                 $packetLength = $buffer->readInt32Signed(); // Get the length of the packet (long).
 
                 $buffer->readInt32Signed(); // Checksum for the decompressed packet (long), burn it - doesn't work in split responses.
-                $result = bzdecompress($buffer->getBuffer()); // Try to decompress
+                $result = \bzdecompress($buffer->getBuffer()); // Try to decompress
 
                 // Verify length.
-                if (strlen($result) != $packetLength) {
+                if (\strlen($result) != $packetLength) {
                     throw new \Exception(
-                        sprintf("Checksum for compressed packet failed! Length expected: %d, length returned: %d.", $packetLength, mb_strlen($result))
+                        sprintf("Checksum for compressed packet failed! Length expected: %d, length returned: %d.", $packetLength, \mb_strlen($result))
                     );
                 }
 
                 // We need to burn extra header (\xFF\xFF\xFF\xFF) on first loop.
                 if ($index === 0) {
-                    $result = substr($result, 4);
+                    $result = \substr($result, 4);
                 }
 
                 $data[$packetNumber] = $result;
@@ -190,16 +186,16 @@ abstract class SourceProtocol extends AbstractProtocol
         unset($packets, $packet);
 
         // Sort the packets by packet number
-        ksort($data);
+        \ksort($data);
 
         // Prepare first package.
-        $buffer = new Buffer($data[array_key_first($data)]);
+        $buffer = new Buffer($data[\array_key_first($data)]);
         $buffer->readString();
 
-        $data[array_key_first($data)] = "\x45" . $buffer->getBuffer();
+        $data[\array_key_first($data)] = "\x45" . $buffer->getBuffer();
 
         // Now combine the packs into one and return.
-        return implode('', $data);
+        return \implode('', $data);
     }
 
     /**
@@ -214,22 +210,20 @@ abstract class SourceProtocol extends AbstractProtocol
     protected function processPackets(Result $result, array $packets): array
     {
         foreach ($packets as $packetId => $packet) {
-            $buffer = new Buffer(is_array($packet) ? $this->preProcessPackets($packetId, $packet) : $packet);
+            $buffer = new Buffer(\is_array($packet) ? $this->preProcessPackets($packetId, $packet) : $packet);
 
             // Get response letter.
             $responseType = $buffer->read();
 
-            if (!array_key_exists($responseType, $this->responses)) {
+            if (!\array_key_exists($responseType, $this->responses)) {
                 throw new \BadMethodCallException(
-                    sprintf('Requested parser for response %s does not exist for current protocol!', $responseType)
+                    \sprintf('Requested parser for response %s does not exist for current protocol!', $responseType)
                 );
             }
 
-            call_user_func_array([$this, $this->responses[$responseType]], [$buffer, $result]);
+            \call_user_func_array([$this, $this->responses[$responseType]], [$buffer, $result]);
             unset($buffer, $responseType);
         }
-
-        $result->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, get_class($this));
 
         return $result->toArray();
     }
@@ -253,13 +247,13 @@ abstract class SourceProtocol extends AbstractProtocol
         $buffer->readString(); // Skip game_dir
         $buffer->readString(); // Skip game_descr
 
-        $result->addRule('steam_appid', $buffer->readInt16());
+        $result->addRule('steam_appid', (string) $buffer->readInt16());
         $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, $buffer->readInt8());
         $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, $buffer->readInt8());
         $result->addInformation(Result::GENERAL_BOTS_SUBCATEGORY, $buffer->readInt8());
 
         if ($dedicated = $buffer->read()) {
-            $dedicated = strtolower($dedicated);
+            $dedicated = \strtolower($dedicated);
             $dedicated = $dedicated === 'd' ? 'Dedicated' : ($dedicated === 'l' ? 'Non-dedicated' : 'Proxy');
         }
 
@@ -267,7 +261,7 @@ abstract class SourceProtocol extends AbstractProtocol
 
         // l = Linux, w = Windows, m / o = MacOs
         if ($os = $buffer->read()) {
-            $os = strtolower($os);
+            $os = \strtolower($os);
             $os = $os === 'l' ? 'Linux' : ($os === 'w' ? 'Windows' : 'Mac Os');
         }
 
@@ -277,10 +271,10 @@ abstract class SourceProtocol extends AbstractProtocol
         $buffer->readInt8(); // Skip VAC secure.
 
         // Only for The Ship.
-        if ($result->getRule('steam_appid') === 2400) {
-            $result->addRule('game_mode', strval($buffer->readInt8()));
-            $result->addRule('witness_count', strval($buffer->readInt8()));
-            $result->addRule('witness_time', strval($buffer->readInt8()));
+        if ((int) $result->getRule('steam_appid') === 2400) {
+            $result->addRule('game_mode', \strval($buffer->readInt8()));
+            $result->addRule('witness_count', \strval($buffer->readInt8()));
+            $result->addRule('witness_time', \strval($buffer->readInt8()));
         }
 
         $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $buffer->readString());
@@ -313,7 +307,7 @@ abstract class SourceProtocol extends AbstractProtocol
         $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $buffer->readInt8());
 
         if ($dedicated = $buffer->read()) {
-            $dedicated = strtolower($dedicated);
+            $dedicated = \strtolower($dedicated);
             $dedicated = $dedicated === 'd' ? 'Dedicated' : ($dedicated === 'l' ? 'Non-dedicated' : 'Proxy');
         }
 
@@ -321,7 +315,7 @@ abstract class SourceProtocol extends AbstractProtocol
 
         // l = Linux, w = Windows, m / o = MacOs
         if ($os = $buffer->read()) {
-            $os = strtolower($os);
+            $os = \strtolower($os);
             $os = $os === 'l' ? 'Linux' : ($os === 'w' ? 'Windows' : 'MacOs');
         }
 
@@ -398,12 +392,10 @@ abstract class SourceProtocol extends AbstractProtocol
      * @inheritDoc
      * @throws \Exception
      */
-    public function handleResponse(array $responses): array
+    public function handleResponse(Result $result, array $responses): array
     {
-        $result = new Result();
-
         // No data to be parsed.
-        if (!count($responses)) {
+        if (!\count($responses)) {
             return $result->toArray();
         }
 

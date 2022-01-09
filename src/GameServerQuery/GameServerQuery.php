@@ -2,10 +2,12 @@
 
 namespace GameServerQuery;
 
+use GameServerQuery\Exception\Formatter\FormatterException;
 use GameServerQuery\Filter\Type\Common\UTF8Filter;
 use GameServerQuery\Formatter\Types\ArrayFormatter;
 use GameServerQuery\Interfaces\FilterInterface;
 use GameServerQuery\Interfaces\FormatterInterface;
+use GameServerQuery\Query\QueryManager;
 
 /**
  * Class GameServerQuery
@@ -78,7 +80,7 @@ class GameServerQuery
      *
      * @param Config|null $config
      *
-     * @return $this
+     * @return GameServerQuery
      */
     public function config(?Config $config = null): GameServerQuery
     {
@@ -92,7 +94,7 @@ class GameServerQuery
      *
      * @param Server $server
      *
-     * @return $this
+     * @return GameServerQuery
      */
     public function server(Server $server): GameServerQuery
     {
@@ -106,7 +108,7 @@ class GameServerQuery
      *
      * @param Server[]|array $servers
      *
-     * @return $this
+     * @return GameServerQuery
      */
     public function servers(array $servers): GameServerQuery
     {
@@ -123,7 +125,7 @@ class GameServerQuery
      * @param string $filterClass
      * @param array  $options
      *
-     * @return $this
+     * @return GameServerQuery
      */
     public function filter(string $filterClass, array $options = []): GameServerQuery
     {
@@ -135,13 +137,16 @@ class GameServerQuery
     /**
      * Set formatter class.
      *
-     * @throws \Exception
+     * @param string $formatter
+     *
+     * @return GameServerQuery
+     * @throws FormatterException
      */
     public function formatter(string $formatter): GameServerQuery
     {
-        if (!in_array(FormatterInterface::class, class_implements($formatter))) {
-            throw new \Exception(
-                sprintf('"%s" does not implement FormatterInterface.', $formatter)
+        if (!\in_array(FormatterInterface::class, \class_implements($formatter))) {
+            throw new FormatterException(
+                \sprintf('"%s" does not implement FormatterInterface.', $formatter)
             );
         }
 
@@ -154,7 +159,7 @@ class GameServerQuery
      * Process servers.
      *
      * @return mixed
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      */
     public function process(): mixed
     {
@@ -168,20 +173,21 @@ class GameServerQuery
         }
 
         // Set configuration and query server(-s).
-        $results = (new Query($this->servers, $this->config))->execute();
+        $queryManager = new QueryManager($this->servers, $this->config);
+        $results      = $queryManager->execute();
 
         // Apply filters.
-        $servers = [];
+        $processedServers = [];
 
         foreach ($results as $fullAddress => $response) {
             foreach ($this->filters as $filter => $options) {
                 /** @var FilterInterface $filter */
-                $servers[$fullAddress] = (new $filter($response, $options))->apply();
+                $processedServers[$fullAddress] = (new $filter($response, $options))->apply();
             }
         }
 
-        // Format response.
-        $formatter = new $this->formatter($servers);
+        /** @var FormatterInterface $formatter */
+        $formatter = new $this->formatter($processedServers);
 
         return $formatter->format();
     }

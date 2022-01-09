@@ -20,20 +20,6 @@ abstract class AbstractFilter implements FilterInterface
     protected static string $filterName = '';
 
     /**
-     * Server response to be filtered.
-     *
-     * @var array
-     */
-    protected array $response = [];
-
-    /**
-     * Filter options.
-     *
-     * @var array
-     */
-    protected array $options = [];
-
-    /**
      * Sections which must be parsed by the filter.
      *
      * @var array
@@ -53,16 +39,14 @@ abstract class AbstractFilter implements FilterInterface
      * @param array $response
      * @param array $options
      */
-    public function __construct(array $response, array $options = [])
+    public function __construct(protected array $response, protected array $options = [])
     {
-        if (!method_exists($this, static::$filterName)) {
+        if (!\method_exists($this, static::$filterName)) {
             throw new \BadMethodCallException(
-                sprintf('Filter method "%s" does not exist!', static::$filterName)
+                \sprintf('Filter method "%s" does not exist!', static::$filterName)
             );
         }
 
-        $this->response  = $response;
-        $this->options   = $options;
         $this->protocols = $options['protocols'] ?? [];
         $this->sections  = $options['sections'] ?? [];
     }
@@ -73,7 +57,7 @@ abstract class AbstractFilter implements FilterInterface
     public function apply(): array
     {
         // Skip this step if there's no section provided.
-        if (!count($this->sections)) {
+        if (!\count($this->sections)) {
             return $this->response;
         }
 
@@ -81,11 +65,11 @@ abstract class AbstractFilter implements FilterInterface
         if ($this->protocols) {
             /** @var ProtocolInterface $serverProtocol */
             $serverProtocol     = $this->response[Result::GENERAL_CATEGORY][Result::GENERAL_APPLICATION_SUBCATEGORY];
-            $supportedProtocols = array_filter($this->protocols, function ($protocol) use ($serverProtocol) {
-                return is_subclass_of($serverProtocol, $protocol) || is_a($serverProtocol, $protocol);
+            $supportedProtocols = \array_filter($this->protocols, function ($protocol) use ($serverProtocol) {
+                return \is_subclass_of($serverProtocol, $protocol) || \is_a($serverProtocol, $protocol);
             });
 
-            if (!count($supportedProtocols)) {
+            if (!\count($supportedProtocols)) {
                 return $this->response;
             }
         }
@@ -96,40 +80,40 @@ abstract class AbstractFilter implements FilterInterface
             }
 
             // Check that we have current section present in server response.
-            if (!array_key_exists($section, $this->response)) {
+            if (!\array_key_exists($section, $this->response)) {
                 continue;
             }
 
             // Empty array provided. Filter all information for the current section.
-            if (!count($values)) {
+            if (!\count($values)) {
                 foreach ($this->response[$section] as $key => $value) {
-                    $this->response[$section][$key] = call_user_func([$this, static::$filterName], $value);
+                    $this->response[$section][$key] = \call_user_func([$this, static::$filterName], $value);
                 }
 
                 continue;
             }
 
             foreach ($values as $value) {
-                // This is created for players array because each player is kept under an array and we need to parse it correctly.
-                if (count($this->response[$section]) > 0 && isset($this->response[$section][0]) && is_array($this->response[$section][0])) {
+                // This is created for players array because each player is kept under an array that  we need to parse it correctly.
+                if (\count($this->response[$section]) > 0 && isset($this->response[$section][0]) && \is_array($this->response[$section][0])) {
                     foreach ($this->response[$section] as $key => $row) {
-                        if (!array_key_exists($value, $row)) {
+                        if (!\array_key_exists($value, $row)) {
                             throw new \InvalidArgumentException(
-                                sprintf("Invalid key '%s' provided for filter. Available keys: %s.", $value, implode(', ', array_keys($row)))
+                                \sprintf("Invalid key '%s' provided for filter. Available keys: %s.", $value, \implode(', ', \array_keys($row)))
                             );
                         }
 
-                        $this->response[$section][$key][$value] = call_user_func([$this, static::$filterName], $row[$value]);
+                        $this->response[$section][$key][$value] = \call_user_func([$this, static::$filterName], $row[$value]);
                     }
 
                     continue;
                 }
 
-                if (!array_key_exists($value, $this->response[$section])) {
+                if (!\array_key_exists($value, $this->response[$section])) {
                     continue;
                 }
 
-                $this->response[$section][$value] = call_user_func([$this, static::$filterName], $this->response[$section][$value]);
+                $this->response[$section][$value] = \call_user_func([$this, static::$filterName], $this->response[$section][$value]);
             }
         }
 

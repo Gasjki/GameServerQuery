@@ -36,7 +36,7 @@ class ArmaIIIProtocol extends SourceProtocol
         '70a109b7' => 'Tac-Ops',
         'dfc0778f' => 'Tanks',
         '2dd9b92b' => 'Contact',
-        '2930da71' => 'Art of War',
+        '2930da71' => 'Art of War'
     ];
 
     /**
@@ -56,26 +56,26 @@ class ArmaIIIProtocol extends SourceProtocol
         }
 
         // Restore escaped sequences.
-        $bufferString = str_replace(["\x01\x01", "\x01\x02", "\x01\x03"], ["\x01", "\x00", "\xFF"], $bufferString);
+        $bufferString = \str_replace(["\x01\x01", "\x01\x02", "\x01\x03"], ["\x01", "\x00", "\xFF"], $bufferString);
 
         // Let's make a new buffer with reassembled data.
         $buffer = new Buffer($bufferString);
         $result
-            ->addRule('rules_protocol_version', strval($buffer->readInt8()))
-            ->addRule('overflow', strval($buffer->readInt8()));
+            ->addRule('rules_protocol_version', \strval($buffer->readInt8()))
+            ->addRule('overflow', \strval($buffer->readInt8()));
 
         // Process DLCs
-        $dlcFirstByte  = decbin($buffer->readInt8()); // Grab DLC bit 1 and use it later.
-        $dlcSecondByte = decbin($buffer->readInt8()); // Grab DLC bit 2 and use it later.
-        $dlcCount      = substr_count($dlcFirstByte, '1') + substr_count($dlcSecondByte, '1'); // Count the DLCs
+        $dlcFirstByte  = \decbin($buffer->readInt8()); // Grab DLC bit 1 and use it later.
+        $dlcSecondByte = \decbin($buffer->readInt8()); // Grab DLC bit 2 and use it later.
+        $dlcCount      = \substr_count($dlcFirstByte, '1') + \substr_count($dlcSecondByte, '1'); // Count the DLCs
         $dlcs          = [];
 
         for ($x = 0; $x < $dlcCount; $x++) {
-            $dlcHash = dechex($buffer->readInt32());
+            $dlcHash = \dechex($buffer->readInt32());
             $dlcs[]  = $this->dlcNames[$dlcHash] ?? null;
         }
 
-        $result->addRule('dlcs', implode(',', array_unique($dlcs))); // Add DLCs to result.
+        $result->addRule('dlcs', \implode(',', \array_unique($dlcs))); // Add DLCs to result.
 
         // Process difficulty
         $difficulty = $buffer->readInt8();
@@ -97,7 +97,7 @@ class ArmaIIIProtocol extends SourceProtocol
             $mods[] = $buffer->readPascalString(0, true);
         }
 
-        $result->addRule('mods', implode(',', array_unique($mods)));
+        $result->addRule('mods', \implode(',', \array_unique($mods)));
 
         unset($nbOfMods, $mods);
 
@@ -110,7 +110,7 @@ class ArmaIIIProtocol extends SourceProtocol
             $signatures[] = $buffer->readPascalString(0, true);
         }
 
-        $result->addRule('signatures', implode(',', array_unique($signatures)));
+        $result->addRule('signatures', \implode(',', \array_unique($signatures)));
 
         unset($buffer, $bufferString, $dlcFirstByte, $dlcSecondByte, $dlcs, $dlcCount, $dlcHash, $difficulty, $nbOfMods, $mods, $nbOfSignatures, $signatures); // Clear buffer from memory.
     }

@@ -2,7 +2,7 @@
 
 namespace GameServerQuery\Interfaces;
 
-use GameServerQuery\Buffer;
+use GameServerQuery\Result;
 
 /**
  * Interface ProtocolInterface
@@ -25,6 +25,13 @@ interface ProtocolInterface
     public const PACKAGE_STATUS    = 'status';
     public const PACKAGE_RULES     = 'rules';
     public const PACKAGE_VERSION   = 'version';
+
+    /**
+     * Returns query class path used by this protocol.
+     *
+     * @return string
+     */
+    public function getQueryClass(): string;
 
     /**
      * Calculate query port.
@@ -64,43 +71,21 @@ interface ProtocolInterface
     public function hasChallenge(): bool;
 
     /**
-     * Update packages based on challenge package response.
-     *
-     * @param Buffer $buffer
-     */
-    public function updateQueryPackages(Buffer $buffer): void;
-
-    /**
-     * Apply challenge to current packages.
-     *
-     * @param string $challenge
-     */
-    public function applyChallenge(string $challenge): void;
-
-    /**
      * Returns package.
      *
-     * @param string $packageName
+     * @param string $packageType
      *
      * @return string
      */
-    public function getPackage(string $packageName): string;
-
-    /**
-     * Returns all packages excepting those given as argument.
-     *
-     * @param array|string $exceptions
-     *
-     * @return array
-     */
-    public function getAllPackagesExcept(array|string $exceptions): array;
+    public function getPackage(string $packageType): string;
 
     /**
      * Handle socket response.
      *
-     * @param array $responses
+     * @param Result $result
+     * @param array  $responses
      *
      * @return array
      */
-    public function handleResponse(array $responses): array;
+    public function handleResponse(Result $result, array $responses): array;
 }
