@@ -17,7 +17,7 @@ abstract class AbstractFilter implements FilterInterface
      *
      * @var string
      */
-    protected static string $filterName = '';
+    protected static string $filterMethodName = '';
 
     /**
      * Sections which must be parsed by the filter.
@@ -38,12 +38,14 @@ abstract class AbstractFilter implements FilterInterface
      *
      * @param array $response
      * @param array $options
+     *
+     * @throws \LogicException
      */
     public function __construct(protected array $response, protected array $options = [])
     {
-        if (!\method_exists($this, static::$filterName)) {
-            throw new \BadMethodCallException(
-                \sprintf('Filter method "%s" does not exist!', static::$filterName)
+        if (!\method_exists($this, static::$filterMethodName)) {
+            throw new \LogicException(
+                \sprintf('Filter method "%s" does not exist!', static::$filterMethodName)
             );
         }
 
@@ -65,7 +67,7 @@ abstract class AbstractFilter implements FilterInterface
         if ($this->protocols) {
             /** @var ProtocolInterface $serverProtocol */
             $serverProtocol     = $this->response[Result::GENERAL_CATEGORY][Result::GENERAL_APPLICATION_SUBCATEGORY];
-            $supportedProtocols = \array_filter($this->protocols, function ($protocol) use ($serverProtocol) {
+            $supportedProtocols = \array_filter($this->protocols, static function($protocol) use ($serverProtocol) {
                 return \is_subclass_of($serverProtocol, $protocol) || \is_a($serverProtocol, $protocol);
             });
 
@@ -87,7 +89,7 @@ abstract class AbstractFilter implements FilterInterface
             // Empty array provided. Filter all information for the current section.
             if (!\count($values)) {
                 foreach ($this->response[$section] as $key => $value) {
-                    $this->response[$section][$key] = \call_user_func([$this, static::$filterName], $value);
+                    $this->response[$section][$key] = $this->{static::$filterMethodName}($value);
                 }
 
                 continue;
@@ -103,7 +105,7 @@ abstract class AbstractFilter implements FilterInterface
                             );
                         }
 
-                        $this->response[$section][$key][$value] = \call_user_func([$this, static::$filterName], $row[$value]);
+                        $this->response[$section][$key][$value] = $this->{static::$filterMethodName}($row[$value]);
                     }
 
                     continue;
@@ -113,7 +115,7 @@ abstract class AbstractFilter implements FilterInterface
                     continue;
                 }
 
-                $this->response[$section][$value] = \call_user_func([$this, static::$filterName], $this->response[$section][$value]);
+                $this->response[$section][$value] = $this->{static::$filterMethodName}($this->response[$section][$value]);
             }
         }
 

@@ -34,7 +34,7 @@ class Server
      */
     public function __construct(string $protocol, protected string $ipAddress, protected int $port, protected ?int $queryPort = null)
     {
-        if (!\in_array(ProtocolInterface::class, \class_implements($protocol))) {
+        if (!\in_array(ProtocolInterface::class, \class_implements($protocol), true)) {
             throw new ProtocolException(sprintf('"%s" does not implement ProtocolInterface.', $protocol));
         }
 

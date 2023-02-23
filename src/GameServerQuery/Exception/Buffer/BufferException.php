@@ -2,11 +2,13 @@
 
 namespace GameServerQuery\Exception\Buffer;
 
+use GameServerQuery\Exception\GameServerQueryException;
+
 /**
  * Class BufferException
  * @package GameServerQuery\Exception\Buffer
  */
-class BufferException extends \Exception
+class BufferException extends GameServerQueryException
 {
 
 }

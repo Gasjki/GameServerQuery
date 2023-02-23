@@ -1,6 +1,6 @@
 # 📊 Game Server Query
 
-Current version: **1.0.1**
+Current version: **1.0.2**
 
 ### [Inspiration: GameQ by AustinB](https://github.com/Austinb/GameQ)
 

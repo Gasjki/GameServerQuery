@@ -94,17 +94,17 @@ class Result
         if (!\count($this->result)) {
             $this->addAllSections(); // Add all sections by default.
 
-            $this->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, null);
-            $this->addInformation(Result::GENERAL_ACTIVE_SUBCATEGORY, false);
-            $this->addInformation(Result::GENERAL_HOSTNAME_SUBCATEGORY, null);
-            $this->addInformation(Result::GENERAL_MAP_SUBCATEGORY, null);
-            $this->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, 0);
-            $this->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, 0);
-            $this->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, null);
-            $this->addInformation(Result::GENERAL_BOTS_SUBCATEGORY, 0);
-            $this->addInformation(Result::GENERAL_DEDICATED_SUBCATEGORY, null);
-            $this->addInformation(Result::GENERAL_OS_SUBCATEGORY, null);
-            $this->addInformation(Result::GENERAL_PASSWORD_SUBCATEGORY, false);
+            $this->addInformation(self::GENERAL_APPLICATION_SUBCATEGORY, null);
+            $this->addInformation(self::GENERAL_ACTIVE_SUBCATEGORY, false);
+            $this->addInformation(self::GENERAL_HOSTNAME_SUBCATEGORY, null);
+            $this->addInformation(self::GENERAL_MAP_SUBCATEGORY, null);
+            $this->addInformation(self::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, 0);
+            $this->addInformation(self::GENERAL_SLOTS_SUBCATEGORY, 0);
+            $this->addInformation(self::GENERAL_VERSION_SUBCATEGORY, null);
+            $this->addInformation(self::GENERAL_BOTS_SUBCATEGORY, 0);
+            $this->addInformation(self::GENERAL_DEDICATED_SUBCATEGORY, null);
+            $this->addInformation(self::GENERAL_OS_SUBCATEGORY, null);
+            $this->addInformation(self::GENERAL_PASSWORD_SUBCATEGORY, false);
         }
     }
 
@@ -184,7 +184,11 @@ class Result
     {
         if (!$this->hasInformation($name)) {
             throw new InformationNotFoundException(
-                sprintf('Information key "%s" was not found. Available keys: %s', $name, \implode(', ', \array_keys($this->result[self::GENERAL_CATEGORY])))
+                sprintf(
+                    'Information key "%s" was not found. Available keys: %s',
+                    $name,
+                    \implode(', ', \array_keys($this->result[self::GENERAL_CATEGORY]))
+                )
             );
         }
 
@@ -284,10 +288,10 @@ class Result
      *
      * @param string $key
      *
-     * @return mixed
+     * @return string|int
      * @throws RuleNotFoundException
      */
-    public function getRule(string $key): mixed
+    public function getRule(string $key): string|int
     {
         if (!$this->hasRule($key)) {
             throw new RuleNotFoundException(\sprintf('Rule "%s" was not found!', $key));

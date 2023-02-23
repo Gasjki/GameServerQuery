@@ -2,11 +2,13 @@
 
 namespace GameServerQuery\Exception\Result;
 
+use GameServerQuery\Exception\GameServerQueryException;
+
 /**
  * Class ResultException
  * @package GameServerQuery\Exception\Result
  */
-class ResultException extends \Exception
+class ResultException extends GameServerQueryException
 {
 
 }

@@ -113,7 +113,7 @@ class Buffer
         $length       = \strlen($this->data);
         $string       = $this->data[\strlen($this->data) - 1];
         $this->data   = \substr($this->data, 0, $length - 1);
-        $this->length -= 1;
+        --$this->length;
 
         return $string;
     }

@@ -64,7 +64,7 @@ abstract class AbstractQuery implements QueryInterface
                     continue;
                 }
 
-                if (\strlen($response) === 0) {
+                if (empty($response)) {
                     break;
                 }
 

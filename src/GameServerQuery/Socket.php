@@ -15,7 +15,7 @@ class Socket
      *
      * @var resource|null
      */
-    protected $socket = null;
+    protected $socket;
 
     /**
      * Socket constructor.
@@ -39,7 +39,7 @@ class Socket
      * @return void
      * @throws SocketCreationFailedException
      */
-    protected function create(Server $server, int $timeout)
+    protected function create(Server $server, int $timeout): void
     {
         $address = \sprintf('%s://%s', $server->getProtocol()->getTransportSchema(), $server->getFullAddressWithQueryPort());
         $context = \stream_context_create(['socket' => ['bindto' => '0:0']]);

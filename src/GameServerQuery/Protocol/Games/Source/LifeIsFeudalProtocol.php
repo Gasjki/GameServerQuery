@@ -5,16 +5,15 @@ namespace GameServerQuery\Protocol\Games\Source;
 use GameServerQuery\Protocol\Types\SourceProtocol;
 
 /**
- * Class PixARKProtocol
+ * Class LifeIsFeudalProtocol
  * @package GameServerQuery\Protocol\Games\Source
  */
-class PixARKProtocol extends SourceProtocol
+class LifeIsFeudalProtocol extends SourceProtocol
 {
     /**
      * Port to query port difference.
-     * @see https://pixark.fandom.com/wiki/Server_configuration
      *
      * @var int
      */
-    protected int $portToQueryPortStep = 1;
+    protected int $portToQueryPortStep = 2;
 }

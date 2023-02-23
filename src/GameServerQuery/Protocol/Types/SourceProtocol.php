@@ -24,7 +24,7 @@ abstract class SourceProtocol extends AbstractProtocol
      * @var array
      */
     protected array $packages = [
-        self::PACKAGE_INFO    => "\xFF\xFF\xFF\xFF\x54Source Engine Query\0%s", // A2S_INFO
+        self::PACKAGE_INFO    => "\xFF\xFF\xFF\xFF\x54Source Engine Query\x00%s", // A2S_INFO
         self::PACKAGE_PLAYERS => "\xFF\xFF\xFF\xFF\x55%s", // A2S_PLAYER
         self::PACKAGE_RULES   => "\xFF\xFF\xFF\xFF\x56%s", // A2S_RULE
     ];
@@ -51,14 +51,14 @@ abstract class SourceProtocol extends AbstractProtocol
     /**
      * SourceProtocol constructor.
      *
-     * @throws \Exception
+     * @throws \RuntimeException
      */
     public function __construct()
     {
         parent::__construct();
 
         if (!\function_exists('bzdecompress')) {
-            throw new \Exception('Bzip2 is not installed! See https://www.php.net/manual/en/book.bzip2.php for more details!');
+            throw new \RuntimeException('Bzip2 is not installed! See https://www.php.net/manual/en/book.bzip2.php for more details!');
         }
     }
 
@@ -102,7 +102,7 @@ abstract class SourceProtocol extends AbstractProtocol
         }
 
         // Clear memory.
-        unset($data, $buffer, $header, $packetId);
+        unset($buffer, $header, $packetId);
 
         return $packets;
     }
@@ -150,8 +150,8 @@ abstract class SourceProtocol extends AbstractProtocol
                 $result = \bzdecompress($buffer->getBuffer()); // Try to decompress
 
                 // Verify length.
-                if (\strlen($result) != $packetLength) {
-                    throw new \Exception(
+                if (\strlen($result) !== $packetLength) {
+                    throw new \RuntimeException(
                         sprintf("Checksum for compressed packet failed! Length expected: %d, length returned: %d.", $packetLength, \mb_strlen($result))
                     );
                 }
@@ -183,7 +183,7 @@ abstract class SourceProtocol extends AbstractProtocol
         }
 
         // Free some memory
-        unset($packets, $packet);
+        unset($packet);
 
         // Sort the packets by packet number
         \ksort($data);
@@ -221,7 +221,7 @@ abstract class SourceProtocol extends AbstractProtocol
                 );
             }
 
-            \call_user_func_array([$this, $this->responses[$responseType]], [$buffer, $result]);
+            $this->{$this->responses[$responseType]}($buffer, $result);
             unset($buffer, $responseType);
         }
 
@@ -272,14 +272,12 @@ abstract class SourceProtocol extends AbstractProtocol
 
         // Only for The Ship.
         if ((int) $result->getRule('steam_appid') === 2400) {
-            $result->addRule('game_mode', \strval($buffer->readInt8()));
-            $result->addRule('witness_count', \strval($buffer->readInt8()));
-            $result->addRule('witness_time', \strval($buffer->readInt8()));
+            $result->addRule('game_mode', (string) $buffer->readInt8());
+            $result->addRule('witness_count', (string) $buffer->readInt8());
+            $result->addRule('witness_time', (string) $buffer->readInt8());
         }
 
         $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $buffer->readString());
-
-        unset($buffer); // Clear buffer from memory.
     }
 
     /**
@@ -336,8 +334,6 @@ abstract class SourceProtocol extends AbstractProtocol
 
         $buffer->readInt8(); // Skip secure
         $result->addInformation(Result::GENERAL_BOTS_SUBCATEGORY, $buffer->readInt8());
-
-        unset($buffer); // Clear buffer from memory.
     }
 
     /**
@@ -359,8 +355,6 @@ abstract class SourceProtocol extends AbstractProtocol
 
             $result->addPlayer($buffer->readString(), $buffer->readInt32Signed(), $buffer->readFloat32());
         }
-
-        unset($buffer); // Clear buffer from memory.
     }
 
     /**
@@ -384,8 +378,6 @@ abstract class SourceProtocol extends AbstractProtocol
         if ($result->hasRule('sv_version')) {
             $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $result->getRule('sv_version'));
         }
-
-        unset($buffer); // Clear buffer from memory.
     }
 
     /**

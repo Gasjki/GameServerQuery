@@ -18,7 +18,7 @@ class GameServerQuery
     /**
      * Current script version.
      */
-    private const VERSION = '1.0.1';
+    private const VERSION = '1.0.2';
 
     /**
      * GameServerQuery configuration.
@@ -110,7 +110,7 @@ class GameServerQuery
      *
      * @return GameServerQuery
      */
-    public function servers(array $servers): GameServerQuery
+    public function servers(Server ...$servers): GameServerQuery
     {
         foreach ($servers as $server) {
             $this->server($server);
@@ -144,7 +144,7 @@ class GameServerQuery
      */
     public function formatter(string $formatter): GameServerQuery
     {
-        if (!\in_array(FormatterInterface::class, \class_implements($formatter))) {
+        if (!\in_array(FormatterInterface::class, \class_implements($formatter), true)) {
             throw new FormatterException(
                 \sprintf('"%s" does not implement FormatterInterface.', $formatter)
             );

@@ -2,11 +2,13 @@
 
 namespace GameServerQuery\Exception\DNS;
 
+use GameServerQuery\Exception\GameServerQueryException;
+
 /**
  * Class DNSToIPConversionException
  * @package GameServerQuery\Exception\DNS
  */
-class DNSToIPConversionException extends \Exception
+class DNSToIPConversionException extends GameServerQueryException
 {
 
 }
