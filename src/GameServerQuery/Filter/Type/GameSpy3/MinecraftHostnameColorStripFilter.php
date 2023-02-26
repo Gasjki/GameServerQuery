@@ -15,7 +15,7 @@ class MinecraftHostnameColorStripFilter extends AbstractFilter
      *
      * @var string
      */
-    protected static string $filterName = 'stripColors';
+    protected static string $filterMethodName = 'stripColors';
 
     /**
      * Convert existing text to UTF-8.

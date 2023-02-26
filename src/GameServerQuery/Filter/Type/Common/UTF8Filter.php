@@ -15,7 +15,7 @@ class UTF8Filter extends AbstractFilter
      *
      * @var string
      */
-    protected static string $filterName = 'convertTextToUtf8';
+    protected static string $filterMethodName = 'convertTextToUtf8';
 
     /**
      * Convert existing text to UTF-8.
