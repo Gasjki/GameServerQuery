@@ -137,15 +137,11 @@ abstract class SourceProtocol extends AbstractProtocol
                 continue;
             }
 
-            // Number of packets in this set (byte)
-            $buffer->readInt8();
-
-            // Current packet number (byte)
-            $packetNumber = $buffer->readInt8();
+            $buffer->readInt8(); // Number of packets in this set (byte)
+            $packetNumber = $buffer->readInt8(); // Current packet number (byte)
 
             if ($packetId & 0x80000000) {
                 $packetLength = $buffer->readInt32Signed(); // Get the length of the packet (long).
-
                 $buffer->readInt32Signed(); // Checksum for the decompressed packet (long), burn it - doesn't work in split responses.
                 $result = \bzdecompress($buffer->getBuffer()); // Try to decompress
 
@@ -172,27 +168,20 @@ abstract class SourceProtocol extends AbstractProtocol
             // We need to burn extra header (\xFF\xFF\xFF\xFF) on first loop.
             if ($index === 0) {
                 $buffer->skip(4);
-
-                $result              = $buffer->getBuffer();
-                $data[$packetNumber] = $result;
-                continue;
             }
 
             $result              = $buffer->getBuffer();
             $data[$packetNumber] = $result;
         }
 
-        // Free some memory
-        unset($packet);
-
         // Sort the packets by packet number
         \ksort($data);
 
         // Prepare first package.
-        $buffer = new Buffer($data[\array_key_first($data)]);
-        $buffer->readString();
-
-        $data[\array_key_first($data)] = "\x45" . $buffer->getBuffer();
+//        $buffer = new Buffer($data[\array_key_first($data)]);
+//        $buffer->readString();
+//
+//        $data[\array_key_first($data)] = "\x45" . $buffer->getBuffer();
 
         // Now combine the packs into one and return.
         return \implode('', $data);
