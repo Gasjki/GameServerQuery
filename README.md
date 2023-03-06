@@ -1,6 +1,6 @@
 # 📊 Game Server Query
 
-Current version: **1.0.4**
+Current version: **1.0.5**
 
 ### [Inspiration: GameQ by AustinB](https://github.com/Austinb/GameQ)
 
@@ -32,7 +32,7 @@ See more examples [here](https://github.com/Gasjki/GameServerQuery/wiki).
 
 ### Live example
 
-I'll add a website here soon.
+Live example: https://gamefire.ro
 
 ### Exceptions
 
