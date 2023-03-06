@@ -48,7 +48,7 @@ class SourceQuery extends AbstractQuery
     protected function extractChallenge(Socket $socket): void
     {
         $package  = $this->createPackage(ProtocolInterface::PACKAGE_PLAYERS, "\xFF\xFF\xFF\xFF");
-        $response = $this->doRead($socket, $package, 4096);
+        $response = $this->doRead($socket, $package, 32768);
 
         if (!$response) {
             return; // Stop query execution.
@@ -70,7 +70,7 @@ class SourceQuery extends AbstractQuery
      * @return array
      * @throws BufferException
      */
-    protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32000): array
+    protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32768): array
     {
         if (ProtocolInterface::PACKAGE_INFO !== $packageType && !$this->serverChallenge) {
             $this->extractChallenge($socket);
@@ -124,7 +124,7 @@ class SourceQuery extends AbstractQuery
      * @return array
      * @throws BufferException
      */
-    protected function readServerInformation(Socket $socket, int $length = 32000): array
+    protected function readServerInformation(Socket $socket, int $length = 32768): array
     {
         return $this->readPackageFromServer($socket, ProtocolInterface::PACKAGE_INFO, $length);
     }
@@ -138,7 +138,7 @@ class SourceQuery extends AbstractQuery
      * @return array
      * @throws BufferException
      */
-    protected function readServerPlayers(Socket $socket, int $length = 32000): array
+    protected function readServerPlayers(Socket $socket, int $length = 32768): array
     {
         return $this->readPackageFromServer($socket, ProtocolInterface::PACKAGE_PLAYERS, $length);
     }
@@ -152,7 +152,7 @@ class SourceQuery extends AbstractQuery
      * @return array
      * @throws BufferException
      */
-    protected function readServerCvars(Socket $socket, int $length = 32000): array
+    protected function readServerCvars(Socket $socket, int $length = 32768): array
     {
         return $this->readPackageFromServer($socket, ProtocolInterface::PACKAGE_RULES, $length);
     }

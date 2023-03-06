@@ -43,7 +43,7 @@ abstract class AbstractQuery implements QueryInterface
      *
      * @return array
      */
-    protected function doSocketQuery(Socket $socket, int $length = 1024): array
+    protected function doSocketQuery(Socket $socket, int $length = 32768): array
     {
         $responses  = [];
         $sockets    = [$socket->getSocket()];
@@ -55,7 +55,7 @@ abstract class AbstractQuery implements QueryInterface
             }
 
             $stream = \stream_select($sockets, $write, $except, 0, $this->config->get('stream_timeout', 200000));
-            if (false === $stream || ($stream <= 0)) {
+            if (false === $stream) {
                 break;
             }
 

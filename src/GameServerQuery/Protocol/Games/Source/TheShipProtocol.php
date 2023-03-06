@@ -12,6 +12,8 @@ use GameServerQuery\Result;
  */
 class TheShipProtocol extends SourceProtocol
 {
+    public const APP_ID = 2400;
+
     /**
      * @inheritDoc
      */

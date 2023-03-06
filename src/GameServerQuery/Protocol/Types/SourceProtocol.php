@@ -4,6 +4,7 @@ namespace GameServerQuery\Protocol\Types;
 
 use GameServerQuery\Buffer;
 use GameServerQuery\Protocol\AbstractProtocol;
+use GameServerQuery\Protocol\Games\Source\TheShipProtocol;
 use GameServerQuery\Query\Types\SourceQuery;
 use GameServerQuery\Result;
 
@@ -177,12 +178,6 @@ abstract class SourceProtocol extends AbstractProtocol
         // Sort the packets by packet number
         \ksort($data);
 
-        // Prepare first package.
-//        $buffer = new Buffer($data[\array_key_first($data)]);
-//        $buffer->readString();
-//
-//        $data[\array_key_first($data)] = "\x45" . $buffer->getBuffer();
-
         // Now combine the packs into one and return.
         return \implode('', $data);
     }
@@ -233,10 +228,10 @@ abstract class SourceProtocol extends AbstractProtocol
         $result->addInformation(Result::GENERAL_HOSTNAME_SUBCATEGORY, $buffer->readString());
         $result->addInformation(Result::GENERAL_MAP_SUBCATEGORY, $buffer->readString());
 
-        $buffer->readString(); // Skip game_dir
-        $buffer->readString(); // Skip game_descr
-
+        $result->addRule('game_dir', $buffer->readString());
+        $result->addRule('game_descr', $buffer->readString());
         $result->addRule('steam_appid', (string) $buffer->readInt16());
+
         $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, $buffer->readInt8());
         $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, $buffer->readInt8());
         $result->addInformation(Result::GENERAL_BOTS_SUBCATEGORY, $buffer->readInt8());
@@ -260,7 +255,7 @@ abstract class SourceProtocol extends AbstractProtocol
         $buffer->readInt8(); // Skip VAC secure.
 
         // Only for The Ship.
-        if ((int) $result->getRule('steam_appid') === 2400) {
+        if ((int) $result->getRule('steam_appid') === TheShipProtocol::APP_ID) {
             $result->addRule('game_mode', (string) $buffer->readInt8());
             $result->addRule('witness_count', (string) $buffer->readInt8());
             $result->addRule('witness_time', (string) $buffer->readInt8());
@@ -286,8 +281,8 @@ abstract class SourceProtocol extends AbstractProtocol
         $result->addInformation(Result::GENERAL_HOSTNAME_SUBCATEGORY, $buffer->readString());
         $result->addInformation(Result::GENERAL_MAP_SUBCATEGORY, $buffer->readString());
 
-        $buffer->readString(); // Skip game_dir
-        $buffer->readString(); // Skip game_descr
+        $result->addRule('game_dir', $buffer->readString());
+        $result->addRule('game_descr', $buffer->readString());
 
         $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, $buffer->readInt8());
         $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, $buffer->readInt8());
@@ -312,13 +307,13 @@ abstract class SourceProtocol extends AbstractProtocol
         // Mode
         $mode = $buffer->readInt8();
         if ($mode === 1) {
-            $buffer->readString(); // Skip mode URL info
-            $buffer->readString(); // Skip mode URL download
+            $result->addRule('mode_url_info', $buffer->readString());
+            $result->addRule('mode_url_download', $buffer->readString());
             $buffer->skip(); // Skip
-            $buffer->readInt32Signed(); // Skip mode version
-            $buffer->readInt32Signed(); // Skip mode size
-            $buffer->readInt8(); // Skip mode type
-            $buffer->readInt8(); // Skip mode dll
+            $result->addRule('mode_version', (string) $buffer->readInt32Signed());
+            $result->addRule('mode_size', (string) $buffer->readInt32Signed());
+            $result->addRule('mode_type', (string) $buffer->readInt8());
+            $result->addRule('mode_dll', (string) $buffer->readInt8());
         }
 
         $buffer->readInt8(); // Skip secure
@@ -375,6 +370,8 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
+        $responses = array_filter(array_map('trim', $responses));
+
         // No data to be parsed.
         if (!\count($responses)) {
             return $result->toArray();
