@@ -10,5 +10,10 @@ use GameServerQuery\Protocol\Types\SourceProtocol;
  */
 class RustProtocol extends SourceProtocol
 {
-
+    /**
+     * Port to query port difference.
+     *
+     * @var int
+     */
+    protected int $portToQueryPortStep = 1;
 }

@@ -39,7 +39,7 @@ class DayZProtocol extends SourceProtocol
 
         $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $buffer->readString());
 
-        unset($buffer, $tempBuffer);
+        unset($temporaryBuffer);
     }
 
     /**
