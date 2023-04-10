@@ -6,6 +6,7 @@ use GameServerQuery\Buffer;
 use GameServerQuery\Exception\Buffer\BufferException;
 use GameServerQuery\Exception\Socket\SocketCreationFailedException;
 use GameServerQuery\Interfaces\ProtocolInterface;
+use GameServerQuery\Protocol\Types\SourceProtocol;
 use GameServerQuery\Query\AbstractQuery;
 use GameServerQuery\Result;
 use GameServerQuery\Socket;
@@ -16,9 +17,8 @@ use GameServerQuery\Socket;
  */
 class SourceQuery extends AbstractQuery
 {
-    // Packets received.
-    public const S2C_CHALLENGE = 0x41;
-    public const S2A_INFO_OLD  = 0x6D; // Old GoldSource, HLTV uses it (actually called S2A_INFO_DETAILED)
+    public const S2C_CHALLENGE = "\x41";
+    public const S2A_INFO_OLD  = "\x6D"; // Old GoldSource, HLTV uses it (actually called S2A_INFO_DETAILED)
 
     /**
      * Create package.
@@ -34,30 +34,7 @@ class SourceQuery extends AbstractQuery
             throw new \InvalidArgumentException(sprintf("Package '%s' not found for current protocol!", $packageType));
         }
 
-        return \sprintf($package, $string . ($this->serverChallenge ?? ''));
-    }
-
-    /**
-     * Extract servers' challenge.
-     *
-     * @param Socket $socket
-     *
-     * @return void
-     * @throws BufferException
-     */
-    protected function extractChallenge(Socket $socket): void
-    {
-        $package  = $this->createPackage(ProtocolInterface::PACKAGE_PLAYERS, "\xFF\xFF\xFF\xFF");
-        $response = $this->doRead($socket, $package, 32768);
-
-        if (!$response) {
-            return; // Stop query execution.
-        }
-
-        $buffer = new Buffer(\implode('', $response));
-        $buffer->skip(5);
-
-        $this->serverChallenge = $buffer->read(4);
+        return $package . $string . ($this->serverChallenge ?? "\xFF\xFF\xFF\xFF");
     }
 
     /**
@@ -72,31 +49,56 @@ class SourceQuery extends AbstractQuery
      */
     protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32768): array
     {
-        if (ProtocolInterface::PACKAGE_INFO !== $packageType && !$this->serverChallenge) {
-            $this->extractChallenge($socket);
-        }
-
-        $package  = $this->createPackage($packageType);
-        $response = $this->doRead($socket, $package, $length);
-        $buffer   = new Buffer(\implode('', $response));
+        $package   = $this->createPackage($packageType);
+        $responses = $this->doRead($socket, $package, $length);
+        $responses = $this->handleSplitPackets($responses);
+        $buffer    = new Buffer(\implode('', $responses));
 
         if (!$buffer->getLength()) {
             return []; // Buffer is empty.
         }
 
         $buffer->skip(4); // Skip some bytes.
-        $type = \ord($buffer->lookAhead());
+        $type = $buffer->lookAhead();
 
-        // Sometimes,
+        // Servers may respond with the data immediately.
+        // However, since this reply is larger than the request, it makes the server
+        // vulnerable to a reflection amplification attack. Instead, the server may reply
+        // with a challenge to the client using S2C_CHALLENGE ('A' or 0x41). In that case,
+        // the client should repeat the request by appending the challenge number. This change
+        // was introduced in December 2020 to address the reflection attack vulnerability,
+        // and all clients are encouraged to support the new protocol.
         if (self::S2C_CHALLENGE === $type) {
             $buffer->skip();
             $this->serverChallenge = $buffer->read(4);
             $package               = $this->createPackage($packageType); // Reuse this method to generate a package using server challenge.
-            $response              = $this->doRead($socket, $package, $length);
-            $buffer                = new Buffer(\implode('', $response));
+            $responses             = $this->doRead($socket, $package, $length);
+            $buffer                = new Buffer(\implode('', $this->handleSplitPackets($responses)));
         }
 
         return [$buffer->getData()];
+    }
+
+    protected function handleSplitPackets(array $responses): array
+    {
+        if (count($responses) === 1) {
+            return $responses;
+        }
+
+        $data = [];
+
+        foreach ($responses as $index => $item) {
+            if ($index === 0) {
+                $data[] = $item;
+                continue;
+            }
+
+            $buffer = new Buffer($item);
+            $buffer->skip(9);
+            $data[] = $buffer->getBuffer();
+        }
+
+        return $data;
     }
 
     /**
@@ -152,7 +154,7 @@ class SourceQuery extends AbstractQuery
      * @return array
      * @throws BufferException
      */
-    protected function readServerCvars(Socket $socket, int $length = 32768): array
+    protected function readServerRules(Socket $socket, int $length = 32768): array
     {
         return $this->readPackageFromServer($socket, ProtocolInterface::PACKAGE_RULES, $length);
     }
@@ -184,7 +186,7 @@ class SourceQuery extends AbstractQuery
 
         $information = $this->readServerInformation($socket);
         $players     = $this->readServerPlayers($socket);
-        $rules       = $this->readServerCvars($socket);
+        $rules       = $this->readServerRules($socket);
 
         \array_push($responses, ...$information, ...$players, ...$rules);
 

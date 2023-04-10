@@ -25,9 +25,9 @@ abstract class SourceProtocol extends AbstractProtocol
      * @var array
      */
     protected array $packages = [
-        self::PACKAGE_INFO    => "\xFF\xFF\xFF\xFF\x54Source Engine Query\x00%s", // A2S_INFO
-        self::PACKAGE_PLAYERS => "\xFF\xFF\xFF\xFF\x55%s", // A2S_PLAYER
-        self::PACKAGE_RULES   => "\xFF\xFF\xFF\xFF\x56%s", // A2S_RULE
+        self::PACKAGE_INFO    => "\xFF\xFF\xFF\xFFTSource Engine Query\0", // A2S_INFO
+        self::PACKAGE_PLAYERS => "\xFF\xFF\xFF\xFF\x55", // A2S_PLAYER
+        self::PACKAGE_RULES   => "\xFF\xFF\xFF\xFF\x56", // A2S_RULE
     ];
 
     /**
@@ -89,7 +89,7 @@ abstract class SourceProtocol extends AbstractProtocol
 
             // Check if we have a single packet.
             if (-1 === $header) {
-                if (\ord($buffer->lookAhead()) === SourceQuery::S2A_INFO_OLD) {
+                if ($buffer->lookAhead() === SourceQuery::S2A_INFO_OLD) {
                     $this->engine = self::GOLD_SOURCE_ENGINE;
                 }
 
@@ -238,7 +238,6 @@ abstract class SourceProtocol extends AbstractProtocol
 
         if ($dedicated = $buffer->read()) {
             $dedicated = \strtolower($dedicated);
-            $dedicated = $dedicated === 'd' ? 'Dedicated' : ($dedicated === 'l' ? 'Non-dedicated' : 'Proxy');
         }
 
         $result->addInformation(Result::GENERAL_DEDICATED_SUBCATEGORY, $dedicated);
@@ -246,7 +245,6 @@ abstract class SourceProtocol extends AbstractProtocol
         // l = Linux, w = Windows, m / o = MacOs
         if ($os = $buffer->read()) {
             $os = \strtolower($os);
-            $os = $os === 'l' ? 'Linux' : ($os === 'w' ? 'Windows' : 'Mac Os');
         }
 
         $result->addInformation(Result::GENERAL_OS_SUBCATEGORY, $os);
@@ -290,7 +288,6 @@ abstract class SourceProtocol extends AbstractProtocol
 
         if ($dedicated = $buffer->read()) {
             $dedicated = \strtolower($dedicated);
-            $dedicated = $dedicated === 'd' ? 'Dedicated' : ($dedicated === 'l' ? 'Non-dedicated' : 'Proxy');
         }
 
         $result->addInformation(Result::GENERAL_DEDICATED_SUBCATEGORY, $dedicated);
@@ -298,7 +295,6 @@ abstract class SourceProtocol extends AbstractProtocol
         // l = Linux, w = Windows, m / o = MacOs
         if ($os = $buffer->read()) {
             $os = \strtolower($os);
-            $os = $os === 'l' ? 'Linux' : ($os === 'w' ? 'Windows' : 'MacOs');
         }
 
         $result->addInformation(Result::GENERAL_OS_SUBCATEGORY, $os);
