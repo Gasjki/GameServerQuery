@@ -7,10 +7,10 @@ use GameServerQuery\Protocol\Types\SourceProtocol;
 use GameServerQuery\Result;
 
 /**
- * Class WurnProtocol
+ * Class WurnUnlimitedProtocol
  * @package GameServerQuery\Protocol\Games\Source
  */
-class WurnProtocol extends SourceProtocol
+class WurnUnlimitedProtocol extends SourceProtocol
 {
     /**
      * Port to query port difference.
