@@ -110,9 +110,9 @@ class Buffer
      */
     public function readLastCharacter(): string
     {
-        $length       = \strlen($this->data);
-        $string       = $this->data[\strlen($this->data) - 1];
-        $this->data   = \substr($this->data, 0, $length - 1);
+        $length     = \strlen($this->data);
+        $string     = $this->data[\strlen($this->data) - 1];
+        $this->data = \substr($this->data, 0, $length - 1);
         --$this->length;
 
         return $string;
@@ -277,10 +277,11 @@ class Buffer
     /**
      * Read a 32-bit unsigned integer.
      *
+     * @param int $length
+     *
      * @return int
-     * @throws BufferException
      */
-    public function readInt32(): int
+    public function readInt32(int $length = 4): int
     {
         $type = match ($this->numberType) {
             self::NUMBER_TYPE_BIG_ENDIAN    => 'Nint',
@@ -288,7 +289,9 @@ class Buffer
             default                         => 'Lint',
         };
 
-        $int = \unpack($type, $this->read(4));
+        $isLittleEndian = str_starts_with($type, 'L') ? null : (true === str_starts_with($type, 'V'));
+        $string         = $this->read($length);
+        $int            = \unpack($type, self::extendBinaryString($string, isLittleEndian: $isLittleEndian));
 
         return $int['int'];
     }
@@ -350,5 +353,25 @@ class Buffer
         $float = \unpack('ffloat', $string);
 
         return $float['float'];
+    }
+
+    private static function extendBinaryString(string $input, int $length = 4, ?bool $isLittleEndian = null): string
+    {
+        if (\is_null($isLittleEndian)) {
+            $isLittleEndian = self::isLittleEndian();
+        }
+
+        $extension = \str_repeat(\pack($isLittleEndian ? 'V' : 'N', 0b0000), $length - \strlen($input));
+
+        if ($isLittleEndian) {
+            return $input . $extension;
+        }
+
+        return $extension . $input;
+    }
+
+    private static function isLittleEndian(): bool
+    {
+        return 0x00FF === \current(\unpack('v', \pack('S', 0x00FF)));
     }
 }

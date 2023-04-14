@@ -19,7 +19,18 @@ class TheShipProtocol extends SourceProtocol
      */
     protected function processPlayers(Buffer $buffer, Result $result): void
     {
-        // Players list is not supported by this game.
-        // To fast things up, let's skip the entire process.
+        $nbOfPlayers = $buffer->readInt8();
+        $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, $nbOfPlayers);
+
+        if ($nbOfPlayers === 0) {
+            return;
+        }
+
+        for ($player = 0; $player < $nbOfPlayers; $player++) {
+            $buffer->readInt8(); // Skip player ID.
+            $result->addPlayer($buffer->readString(), $buffer->readInt32Signed(), $buffer->readFloat32());
+        }
+
+        unset($nbOfPlayers);
     }
 }

@@ -13,13 +13,6 @@ use GameServerQuery\Result;
 class MordhauProtocol extends SourceProtocol
 {
     /**
-     * Port to query port difference.
-     *
-     * @var int
-     */
-    protected int $portToQueryPortStep = 19235;
-
-    /**
      * @inheritDoc
      */
     protected function processPlayers(Buffer $buffer, Result $result): void

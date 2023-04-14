@@ -10,10 +10,5 @@ use GameServerQuery\Protocol\Types\SourceProtocol;
  */
 class HurtworldProtocol extends SourceProtocol
 {
-    /**
-     * Port to query port difference.
-     *
-     * @var int
-     */
-    protected int $portToQueryPortStep = 1;
+
 }

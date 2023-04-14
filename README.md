@@ -1,6 +1,6 @@
 # 📊 Game Server Query
 
-Current version: **1.0.6**
+Current version: **1.0.7**
 
 ### [Inspiration: GameQ by AustinB](https://github.com/Austinb/GameQ)
 
@@ -41,6 +41,5 @@ Live example: https://gamefire.ro
 - DayZ - does NOT support players
 - Mordhau - does NOT support players
 - Seven Days To Die - does NOT support players
-- The Ship - does NOT support players
 - The Forest - does NOT support players
 - Wurn - does NOT support players

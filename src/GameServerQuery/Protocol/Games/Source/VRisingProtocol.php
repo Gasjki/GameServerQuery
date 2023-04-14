@@ -1,8 +1,19 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace GameServerQuery\Protocol\Games\Source;
 
-class VRisingProtocol
-{
+use GameServerQuery\Protocol\Types\SourceProtocol;
 
+/**
+ * Class VRisingProtocol
+ * @package GameServerQuery\Protocol\Games\Source
+ */
+class VRisingProtocol extends SourceProtocol
+{
+    /**
+     * Port to query port difference.
+     *
+     * @var int
+     */
+    protected int $portToQueryPortStep = 1;
 }

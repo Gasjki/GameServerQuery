@@ -2,7 +2,9 @@
 
 namespace GameServerQuery\Protocol\Games\Source;
 
+use GameServerQuery\Buffer;
 use GameServerQuery\Protocol\Types\SourceProtocol;
+use GameServerQuery\Result;
 
 /**
  * Class RustProtocol
@@ -16,4 +18,20 @@ class RustProtocol extends SourceProtocol
      * @var int
      */
     protected int $portToQueryPortStep = 1;
+
+    /**
+     * @inheritDoc
+     */
+    protected function processRules(Buffer $buffer, Result $result): void
+    {
+        parent::processRules($buffer, $result);
+
+        if ($keywords = $result->getRule('keywords')) {
+            //get max players from mp of keywords and num players from cp keyword
+            preg_match_all('/(mp|cp)(\d+)/', $keywords, $matches);
+
+            $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, (int) $matches[2][0]);
+            $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, (int) $matches[2][1]);
+        }
+    }
 }

@@ -27,7 +27,7 @@ class Result
     public const GENERAL_MAP_SUBCATEGORY            = 'map';
     public const GENERAL_VERSION_SUBCATEGORY        = 'version';
     public const GENERAL_BOTS_SUBCATEGORY           = 'bots';
-    public const GENERAL_DEDICATED_SUBCATEGORY      = 'dedicated';
+    public const GENERAL_SERVER_TYPE_SUBCATEGORY    = 'server_type';
     public const GENERAL_OS_SUBCATEGORY             = 'os';
     public const GENERAL_SLOTS_SUBCATEGORY          = 'slots';
     public const GENERAL_ONLINE_PLAYERS_SUBCATEGORY = 'online_players';
@@ -60,7 +60,7 @@ class Result
         self::GENERAL_MAP_SUBCATEGORY,
         self::GENERAL_VERSION_SUBCATEGORY,
         self::GENERAL_BOTS_SUBCATEGORY,
-        self::GENERAL_DEDICATED_SUBCATEGORY,
+        self::GENERAL_SERVER_TYPE_SUBCATEGORY,
         self::GENERAL_OS_SUBCATEGORY,
         self::GENERAL_SLOTS_SUBCATEGORY,
         self::GENERAL_ONLINE_PLAYERS_SUBCATEGORY,
@@ -102,7 +102,7 @@ class Result
             $this->addInformation(self::GENERAL_SLOTS_SUBCATEGORY, 0);
             $this->addInformation(self::GENERAL_VERSION_SUBCATEGORY, null);
             $this->addInformation(self::GENERAL_BOTS_SUBCATEGORY, 0);
-            $this->addInformation(self::GENERAL_DEDICATED_SUBCATEGORY, null);
+            $this->addInformation(self::GENERAL_SERVER_TYPE_SUBCATEGORY, null);
             $this->addInformation(self::GENERAL_OS_SUBCATEGORY, null);
             $this->addInformation(self::GENERAL_PASSWORD_SUBCATEGORY, false);
         }
@@ -221,14 +221,8 @@ class Result
         // Add section if not exists.
         $this->addSection(self::PLAYERS_CATEGORY);
 
-        if (empty(\trim($name))) {
-            $name  = null; // Player is connection. We don't have any information yet.
-            $score = 0;
-            $time  = 0;
-        }
-
         $this->result[self::PLAYERS_CATEGORY][] = [
-            self::PLAYERS_NAME_SUBCATEGORY        => $name,
+            self::PLAYERS_NAME_SUBCATEGORY        => \trim($name),
             self::PLAYERS_SCORE_SUBCATEGORY       => $score,
             self::PLAYERS_ONLINE_TIME_SUBCATEGORY => $time,
         ];

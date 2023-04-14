@@ -20,18 +20,18 @@ class UTF8Filter extends AbstractFilter
     /**
      * Convert existing text to UTF-8.
      *
-     * @param string|null $text
+     * @param mixed $text
      *
-     * @return string|null
+     * @return mixed
      */
-    public function convertTextToUtf8(?string $text): ?string
+    public function convertTextToUtf8(mixed $text): mixed
     {
-        if (!$text) {
+        if (!is_string($text)) {
             return $text;
         }
 
-        $text = trim($text);
         $text = \preg_replace('/[\x00-\x1f]/', '', $text);
+        $text = trim($text);
 
         return \mb_convert_encoding($text, 'UTF-8');
     }

@@ -6,7 +6,6 @@ use GameServerQuery\Buffer;
 use GameServerQuery\Exception\Buffer\BufferException;
 use GameServerQuery\Exception\Socket\SocketCreationFailedException;
 use GameServerQuery\Interfaces\ProtocolInterface;
-use GameServerQuery\Protocol\Types\SourceProtocol;
 use GameServerQuery\Query\AbstractQuery;
 use GameServerQuery\Result;
 use GameServerQuery\Socket;

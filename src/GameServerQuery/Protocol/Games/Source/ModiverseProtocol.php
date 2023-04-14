@@ -1,8 +1,14 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace GameServerQuery\Protocol\Games\Source;
 
-class ModiverseProtocol
+use GameServerQuery\Protocol\Types\SourceProtocol;
+
+/**
+ * Class ModiverseProtocol
+ * @package GameServerQuery\Protocol\Games\Source
+ */
+class ModiverseProtocol extends SourceProtocol
 {
 
 }

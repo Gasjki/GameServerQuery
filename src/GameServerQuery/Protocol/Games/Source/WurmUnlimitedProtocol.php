@@ -7,17 +7,17 @@ use GameServerQuery\Protocol\Types\SourceProtocol;
 use GameServerQuery\Result;
 
 /**
- * Class WurnUnlimitedProtocol
+ * Class WurmUnlimitedProtocol
  * @package GameServerQuery\Protocol\Games\Source
  */
-class WurnUnlimitedProtocol extends SourceProtocol
+class WurmUnlimitedProtocol extends SourceProtocol
 {
     /**
      * Port to query port difference.
      *
      * @var int
      */
-    protected int $portToQueryPortStep = 23292;
+    protected int $portToQueryPortStep = 1;
 
     /**
      * @inheritDoc

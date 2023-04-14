@@ -2,6 +2,7 @@
 
 namespace GameServerQuery\Formatter\Types;
 
+use GameServerQuery\Exception\Formatter\FormatterException;
 use GameServerQuery\Formatter\AbstractFormatter;
 
 /**
@@ -11,29 +12,15 @@ use GameServerQuery\Formatter\AbstractFormatter;
 class JSONFormatter extends AbstractFormatter
 {
     /**
-     * JSON error messages.
-     *
-     * @var array
-     */
-    private static array $messages = [
-        JSON_ERROR_NONE           => 'No error has occurred.',
-        JSON_ERROR_DEPTH          => 'The maximum stack depth has been exceeded.',
-        JSON_ERROR_STATE_MISMATCH => 'Invalid or malformed JSON.',
-        JSON_ERROR_CTRL_CHAR      => 'Control character error, possibly incorrectly encoded.',
-        JSON_ERROR_SYNTAX         => 'Syntax error.',
-        JSON_ERROR_UTF8           => 'Malformed UTF-8 characters, possibly incorrectly encoded.'
-    ];
-
-    /**
      * @inheritDoc
-     * @throws \Exception
+     * @throws FormatterException
      */
     public function format(): string
     {
-        if (!$result = \json_encode($this->response)) {
-            throw new \Exception(self::$messages[\json_last_error()]);
+        try {
+            return \json_encode($this->response, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw new FormatterException($exception->getMessage(), previous: $exception);
         }
-
-        return $result;
     }
 }

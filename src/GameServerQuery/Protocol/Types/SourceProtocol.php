@@ -230,7 +230,7 @@ abstract class SourceProtocol extends AbstractProtocol
 
         $result->addRule('game_dir', $buffer->readString());
         $result->addRule('game_descr', $buffer->readString());
-        $result->addRule('steam_appid', (string) $buffer->readInt16());
+        $result->addRule('steam_appid', $buffer->readInt16());
 
         $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, $buffer->readInt8());
         $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, $buffer->readInt8());
@@ -240,7 +240,7 @@ abstract class SourceProtocol extends AbstractProtocol
             $dedicated = \strtolower($dedicated);
         }
 
-        $result->addInformation(Result::GENERAL_DEDICATED_SUBCATEGORY, $dedicated);
+        $result->addInformation(Result::GENERAL_SERVER_TYPE_SUBCATEGORY, $dedicated);
 
         // l = Linux, w = Windows, m / o = MacOs
         if ($os = $buffer->read()) {
@@ -250,16 +250,45 @@ abstract class SourceProtocol extends AbstractProtocol
         $result->addInformation(Result::GENERAL_OS_SUBCATEGORY, $os);
         $result->addInformation(Result::GENERAL_PASSWORD_SUBCATEGORY, (bool) $buffer->readInt8());
 
-        $buffer->readInt8(); // Skip VAC secure.
+        $result->addRule('vac_secured', (bool) $buffer->readInt8());
 
         // Only for The Ship.
         if ((int) $result->getRule('steam_appid') === TheShipProtocol::APP_ID) {
-            $result->addRule('game_mode', (string) $buffer->readInt8());
-            $result->addRule('witness_count', (string) $buffer->readInt8());
-            $result->addRule('witness_time', (string) $buffer->readInt8());
+            $result->addRule('game_mode', $buffer->readInt8());
+            $result->addRule('witness_count', $buffer->readInt8());
+            $result->addRule('witness_time', $buffer->readInt8());
         }
 
         $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $buffer->readString());
+
+        $EDFCheck = $buffer->lookAhead(); // Extra Data Flag.
+
+        if (!empty($EDFCheck)) {
+            $edf = $buffer->readInt8();
+
+            if ($edf & 0x80) {
+                $result->addRule('port', $buffer->readInt16Signed());
+            }
+
+            if ($edf & 0x10) {
+                $result->addRule('steam_id', $buffer->readInt64());
+            }
+
+            if ($edf & 0x40) {
+                $result->addRule('sourcetv_port', $buffer->readInt16Signed());
+                $result->addRule('sourcetv_name', $buffer->readString());
+            }
+
+            if ($edf & 0x20) {
+                $result->addRule('keywords', $buffer->readString());
+            }
+
+            if ($edf & 0x01) {
+                $result->addRule('game_id', $buffer->readInt8());
+            }
+        }
+
+        unset($EDFCheck);
     }
 
     /**
@@ -290,7 +319,7 @@ abstract class SourceProtocol extends AbstractProtocol
             $dedicated = \strtolower($dedicated);
         }
 
-        $result->addInformation(Result::GENERAL_DEDICATED_SUBCATEGORY, $dedicated);
+        $result->addInformation(Result::GENERAL_SERVER_TYPE_SUBCATEGORY, $dedicated);
 
         // l = Linux, w = Windows, m / o = MacOs
         if ($os = $buffer->read()) {
@@ -305,14 +334,14 @@ abstract class SourceProtocol extends AbstractProtocol
         if ($mode === 1) {
             $result->addRule('mode_url_info', $buffer->readString());
             $result->addRule('mode_url_download', $buffer->readString());
-            $buffer->skip(); // Skip
-            $result->addRule('mode_version', (string) $buffer->readInt32Signed());
-            $result->addRule('mode_size', (string) $buffer->readInt32Signed());
-            $result->addRule('mode_type', (string) $buffer->readInt8());
-            $result->addRule('mode_dll', (string) $buffer->readInt8());
+            $buffer->skip(); // Skip - NULL byte (as per official documentation)
+            $result->addRule('mode_version', $buffer->readInt32Signed());
+            $result->addRule('mode_size', $buffer->readInt32Signed());
+            $result->addRule('mode_type', $buffer->readInt8());
+            $result->addRule('mode_dll', $buffer->readInt8());
         }
 
-        $buffer->readInt8(); // Skip secure
+        $result->addRule('vac_secured', (bool) $buffer->readInt8());
         $result->addInformation(Result::GENERAL_BOTS_SUBCATEGORY, $buffer->readInt8());
     }
 
