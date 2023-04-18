@@ -16,11 +16,6 @@ use GameServerQuery\Query\QueryManager;
 class GameServerQuery
 {
     /**
-     * Current script version.
-     */
-    private const VERSION = '1.0.7';
-
-    /**
      * GameServerQuery configuration.
      *
      * @var Config|null

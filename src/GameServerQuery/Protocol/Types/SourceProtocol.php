@@ -356,6 +356,10 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     protected function processPlayers(Buffer $buffer, Result $result): void
     {
+        if (!$buffer->getBuffer()) {
+            return;
+        }
+
         if (!$buffer->readInt8()) {
             return;
         }
@@ -377,6 +381,10 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     protected function processRules(Buffer $buffer, Result $result): void
     {
+        if (!$buffer->getBuffer()) {
+            return;
+        }
+
         if (!$buffer->readInt16Signed()) {
             return;
         }
