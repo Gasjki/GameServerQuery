@@ -25,9 +25,10 @@ abstract class SourceProtocol extends AbstractProtocol
      * @var array
      */
     protected array $packages = [
-        self::PACKAGE_INFO    => "\xFF\xFF\xFF\xFFTSource Engine Query\0", // A2S_INFO
-        self::PACKAGE_PLAYERS => "\xFF\xFF\xFF\xFF\x55", // A2S_PLAYER
-        self::PACKAGE_RULES   => "\xFF\xFF\xFF\xFF\x56", // A2S_RULE
+        self::PACKAGE_INFO      => "\xFF\xFF\xFF\xFFTSource Engine Query\0", // A2S_INFO
+        self::PACKAGE_PLAYERS   => "\xFF\xFF\xFF\xFF\x55", // A2S_PLAYER
+        self::PACKAGE_RULES     => "\xFF\xFF\xFF\xFF\x56", // A2S_RULE
+        self::PACKAGE_CHALLENGE => "\xFF\xFF\xFF\xFF\x57", // A2S_RULE
     ];
 
     /**

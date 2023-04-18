@@ -117,6 +117,30 @@ class SourceQuery extends AbstractQuery
     }
 
     /**
+     * Read A2S_SERVERQUERY_GETCHALLENGE from server.
+     *
+     * @param Socket $socket
+     * @param int    $length
+     *
+     * @return string
+     */
+    protected function readServerChallenge(Socket $socket, int $length = 32768): string
+    {
+        $package   = $this->createPackage(ProtocolInterface::PACKAGE_CHALLENGE);
+        $package   = \substr($package, 0, 5); // Remove "\xFF\xFF\xFF\xFF".
+        $responses = $this->doRead($socket, $package, $length);
+        $buffer    = new Buffer(\implode('', $responses));
+
+        if (!$buffer->getLength()) {
+            return ''; // Buffer is empty.
+        }
+
+        $buffer->skip(5);
+
+        return $buffer->getBuffer();
+    }
+
+    /**
      * Read A2S_INFO from server.
      *
      * @param Socket $socket
@@ -175,17 +199,14 @@ class SourceQuery extends AbstractQuery
         // Open socket for server.
         $socket = new Socket($this->server, $this->config->get('timeout', 3));
 
-        // Check if we have any static challenge.
-        if ($this->server->getProtocol()->hasChallenge()) {
-            $this->serverChallenge = $this->server->getProtocol()->getPackage(ProtocolInterface::PACKAGE_CHALLENGE);
-        }
-
         // Fetch server data.
         $responses = [];
 
-        $information = $this->readServerInformation($socket);
-        $players     = $this->readServerPlayers($socket);
-        $rules       = $this->readServerRules($socket);
+        $this->serverChallenge = $this->readServerChallenge($socket);
+        $information           = $this->readServerInformation($socket);
+        $this->serverChallenge = null; // We need to reset it before fetch server's players and rules.
+        $players               = $this->readServerPlayers($socket);
+        $rules                 = $this->readServerRules($socket);
 
         \array_push($responses, ...$information, ...$players, ...$rules);
 
