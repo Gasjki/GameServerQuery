@@ -1,6 +1,6 @@
 # 📊 Game Server Query
 
-Current version: **1.0.9**
+Current version: **1.0.10**
 
 ### [Inspiration: GameQ by AustinB](https://github.com/Austinb/GameQ)
 
@@ -37,9 +37,16 @@ Live example: https://gamefire.ro
 ### Exceptions
 
 *[Source]*
-- Atlas - does NOT support players
-- Day Z - does NOT support players
-- Mordhau - does NOT support players
-- 7 Days To Die - does NOT support players
-- The Forest - does NOT support players
-- Wurn - does NOT support players
+- 7 Days To Die - does NOT support players;
+- Atlas - does NOT support players;
+- Barotrauma - does NOT support players;
+- Battalion 1944 - does NOT support players;
+- Conan Exiles - does NOT support players;
+- Contagion - does NOT support players;
+- Day Z - does NOT support players / rules;
+- Empyrion Galactic Survival - does NOT support players / rules;
+- Mordhau - does NOT support players;
+- Rust - does NOT support players;
+- The Forest - does NOT support players;
+- Valheim - does NOT support players;
+- Wurn - does NOT support players;

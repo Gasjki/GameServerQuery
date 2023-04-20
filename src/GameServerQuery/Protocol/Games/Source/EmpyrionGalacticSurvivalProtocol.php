@@ -22,6 +22,15 @@ class EmpyrionGalacticSurvivalProtocol extends SourceProtocol
     /**
      * @inheritDoc
      */
+    protected function processPlayers(Buffer $buffer, Result $result): void
+    {
+        // Players list is not supported by this game.
+        // To fast things up, let's skip the entire process.
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function processRules(Buffer $buffer, Result $result): void
     {
         parent::processRules($buffer, $result);
