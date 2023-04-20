@@ -62,6 +62,7 @@ class GameServerQuery
                 // [] = all keys, ['hostname', 'map', ...] - applies only to these keys, null = don't filter this section
                 Result::GENERAL_CATEGORY => [Result::GENERAL_HOSTNAME_SUBCATEGORY, Result::GENERAL_MAP_SUBCATEGORY],
                 Result::PLAYERS_CATEGORY => [Result::PLAYERS_NAME_SUBCATEGORY],
+                Result::RULES_CATEGORY   => [],
             ],
 
             // Set extra parameters (if necessary).

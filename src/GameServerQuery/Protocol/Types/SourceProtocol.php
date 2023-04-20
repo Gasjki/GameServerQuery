@@ -3,6 +3,7 @@
 namespace GameServerQuery\Protocol\Types;
 
 use GameServerQuery\Buffer;
+use GameServerQuery\Exception\Buffer\InvalidBufferContentException;
 use GameServerQuery\Protocol\AbstractProtocol;
 use GameServerQuery\Protocol\Games\Source\TheShipProtocol;
 use GameServerQuery\Query\Types\SourceQuery;
@@ -201,9 +202,7 @@ abstract class SourceProtocol extends AbstractProtocol
             $responseType = $buffer->read();
 
             if (!\array_key_exists($responseType, $this->responses)) {
-                throw new \BadMethodCallException(
-                    \sprintf('Requested parser for response %s does not exist for current protocol!', $responseType)
-                );
+                throw new InvalidBufferContentException($responseType, bin2hex($buffer->getData()));
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);
