@@ -70,9 +70,8 @@ class SourceQuery extends AbstractQuery
         if (self::S2C_CHALLENGE === $type) {
             $buffer->skip();
             $this->serverChallenge = $buffer->read(4);
-            $package               = $this->createPackage($packageType); // Reuse this method to generate a package using server challenge.
-            $responses             = $this->doRead($socket, $package, $length);
-            $buffer                = new Buffer(\implode('', $this->handleSplitPackets($responses)));
+            $responses             = $this->readPackageFromServer($socket, $packageType, $length);
+            $buffer                = new Buffer(\implode('', $responses));
         }
 
         return [$buffer->getData()];
