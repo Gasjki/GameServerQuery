@@ -115,6 +115,18 @@ class GameServerQuery
     }
 
     /**
+     * Reset servers list.
+     *
+     * @return GameServerQuery
+     */
+    public function resetServers(): GameServerQuery
+    {
+        $this->servers = [];
+
+        return $this;
+    }
+
+    /**
      * Add new filter.
      *
      * @param string $filterClass
