@@ -403,8 +403,6 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
-        $responses = array_filter(array_map('trim', $responses));
-
         // No data to be parsed.
         if (!\count($responses)) {
             return $result->toArray();
