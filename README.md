@@ -1,6 +1,6 @@
 # 📊 Game Server Query
 
-Current version: **1.0.13**
+Current version: **1.0.14**
 
 ### [Inspiration: GameQ by AustinB](https://github.com/Austinb/GameQ)
 
@@ -50,3 +50,6 @@ Live example: https://gamefire.ro
 - The Forest - does NOT support players;
 - Valheim - does NOT support players;
 - Wurn - does NOT support players;
+
+*[Other]*
+- San Andreas Multiplayer - does NOT support players if # of online players is higher than 255;

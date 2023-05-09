@@ -202,7 +202,7 @@ abstract class SourceProtocol extends AbstractProtocol
             $responseType = $buffer->read();
 
             if (!\array_key_exists($responseType, $this->responses)) {
-                throw new InvalidBufferContentException($responseType, bin2hex($buffer->getData()));
+                throw new InvalidBufferContentException($responseType, \bin2hex($buffer->getData()));
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);
@@ -403,8 +403,6 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
-        $responses = array_filter(array_map('trim', $responses));
-
         // No data to be parsed.
         if (!\count($responses)) {
             return $result->toArray();
