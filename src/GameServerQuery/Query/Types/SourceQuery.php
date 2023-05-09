@@ -20,6 +20,50 @@ class SourceQuery extends AbstractQuery
     public const S2A_INFO_OLD  = "\x6D"; // Old GoldSource, HLTV uses it (actually called S2A_INFO_DETAILED)
 
     /**
+     * @inheritDoc
+     * @throws SocketCreationFailedException
+     * @throws BufferException
+     */
+    public function execute(): array
+    {
+        $result = new Result(parent::execute());
+
+        // Open socket for server.
+        $socket = new Socket($this->server, $this->config->get('timeout', 3));
+
+        // Fetch server data.
+        $responses = [];
+
+        $this->serverChallenge = $this->readServerChallenge($socket);
+        $information           = $this->readServerInformation($socket);
+        $this->serverChallenge = null; // We need to reset it before fetch server's players and rules.
+        $players               = $this->readServerPlayers($socket);
+        $rules                 = $this->readServerRules($socket);
+
+        \array_push($responses, ...$information, ...$players, ...$rules);
+
+        // No response caught. Stop the process and go the next server (if any!).
+        if (!$responses) {
+            // Close socket.
+            $socket->close();
+
+            unset($information, $players, $rules, $this->serverChallenge);
+
+            return $result->toArray();
+        }
+
+        // Process all information and create a new Result object.
+        $response = $this->server->getProtocol()->handleResponse($result, $responses);
+
+        // Close socket.
+        $socket->close();
+
+        unset($information, $players, $rules, $responses, $this->serverChallenge);
+
+        return $response;
+    }
+
+    /**
      * Create package.
      *
      * @param string $packageType
@@ -29,9 +73,7 @@ class SourceQuery extends AbstractQuery
      */
     protected function createPackage(string $packageType, string $string = ''): string
     {
-        if (!$package = $this->server->getProtocol()->getPackage($packageType)) {
-            throw new \InvalidArgumentException(sprintf("Package '%s' not found for current protocol!", $packageType));
-        }
+        $package = parent::createPackage($packageType, $string);
 
         return $package . $string . ($this->serverChallenge ?? "\xFF\xFF\xFF\xFF");
     }
@@ -100,22 +142,6 @@ class SourceQuery extends AbstractQuery
     }
 
     /**
-     * Read from server.
-     *
-     * @param Socket $socket
-     * @param string $package
-     * @param int    $length
-     *
-     * @return array
-     */
-    protected function doRead(Socket $socket, string $package, int $length): array
-    {
-        $socket->write($package);
-
-        return $this->doSocketQuery($socket, $length);
-    }
-
-    /**
      * Read A2S_SERVERQUERY_GETCHALLENGE from server.
      *
      * @param Socket $socket
@@ -137,96 +163,5 @@ class SourceQuery extends AbstractQuery
         $buffer->skip(5);
 
         return $buffer->getBuffer();
-    }
-
-    /**
-     * Read A2S_INFO from server.
-     *
-     * @param Socket $socket
-     * @param int    $length
-     *
-     * @return array
-     * @throws BufferException
-     */
-    protected function readServerInformation(Socket $socket, int $length = 32768): array
-    {
-        return $this->readPackageFromServer($socket, ProtocolInterface::PACKAGE_INFO, $length);
-    }
-
-    /**
-     * Read A2S_PLAYER from server.
-     *
-     * @param Socket $socket
-     * @param int    $length
-     *
-     * @return array
-     * @throws BufferException
-     */
-    protected function readServerPlayers(Socket $socket, int $length = 32768): array
-    {
-        return $this->readPackageFromServer($socket, ProtocolInterface::PACKAGE_PLAYERS, $length);
-    }
-
-    /**
-     * Read A2S_RULES from server.
-     *
-     * @param Socket $socket
-     * @param int    $length
-     *
-     * @return array
-     * @throws BufferException
-     */
-    protected function readServerRules(Socket $socket, int $length = 32768): array
-    {
-        return $this->readPackageFromServer($socket, ProtocolInterface::PACKAGE_RULES, $length);
-    }
-
-    /**
-     * @inheritDoc
-     * @throws SocketCreationFailedException
-     * @throws BufferException
-     */
-    public function execute(): array
-    {
-        // Set default response format.
-        $result = new Result();
-        $result->addInformation(Result::GENERAL_APPLICATION_SUBCATEGORY, \get_class($this->server->getProtocol()));
-        $result->addInformation(Result::GENERAL_IP_ADDRESS_SUBCATEGORY, $this->server->getIpAddress());
-        $result->addInformation(Result::GENERAL_PORT_SUBCATEGORY, $this->server->getPort());
-        $result->addInformation(Result::GENERAL_QUERY_PORT_SUBCATEGORY, $this->server->getQueryPort());
-
-        // Open socket for server.
-        $socket = new Socket($this->server, $this->config->get('timeout', 3));
-
-        // Fetch server data.
-        $responses = [];
-
-        $this->serverChallenge = $this->readServerChallenge($socket);
-        $information           = $this->readServerInformation($socket);
-        $this->serverChallenge = null; // We need to reset it before fetch server's players and rules.
-        $players               = $this->readServerPlayers($socket);
-        $rules                 = $this->readServerRules($socket);
-
-        \array_push($responses, ...$information, ...$players, ...$rules);
-
-        // No response caught. Stop the process and go the next server (if any!).
-        if (!$responses) {
-            // Close socket.
-            $socket->close();
-
-            unset($information, $players, $rules, $this->serverChallenge);
-
-            return $result->toArray();
-        }
-
-        // Process all information and create a new Result object.
-        $response = $this->server->getProtocol()->handleResponse($result, $responses);
-
-        // Close socket.
-        $socket->close();
-
-        unset($information, $players, $rules, $responses, $this->serverChallenge);
-
-        return $response;
     }
 }

@@ -15,6 +15,6 @@ class GameSpy3Query extends AbstractQuery
      */
     public function execute(): array
     {
-        return [];
+        return parent::execute();
     }
 }
