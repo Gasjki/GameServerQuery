@@ -53,6 +53,8 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
+        $responses = array_filter($responses);
+
         // No data to be parsed.
         if (!\count($responses)) {
             return $result->toArray();
