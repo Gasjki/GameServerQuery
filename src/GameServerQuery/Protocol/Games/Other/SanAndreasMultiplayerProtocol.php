@@ -172,7 +172,7 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
 
             // Check the header. Should be `SAMP`.
             if (($header = $buffer->read(4)) !== 'SAMP') {
-                throw new BufferException(__METHOD__ . " header response '$header' is not valid!");
+                throw new BufferException("Server header verification failed!");
             }
 
             // Check to make sure the server response code matches what we sent
@@ -207,7 +207,7 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
             $responseType = $buffer->read();
 
             if (!\array_key_exists($responseType, $this->responses)) {
-                throw new InvalidBufferContentException($responseType, bin2hex($buffer->getData()));
+                throw new InvalidBufferContentException($responseType, \bin2hex($buffer->getData()));
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);

@@ -26,7 +26,7 @@ class SanAndreasMultiplayerQuery extends AbstractQuery
      */
     public static function computeServerChallenge(string $ipAddress, int $clientPort): string
     {
-        return implode('', array_map('chr', explode('.', $ipAddress))) . pack('S', $clientPort);
+        return \implode('', \array_map('chr', \explode('.', $ipAddress))) . \pack('S', $clientPort);
     }
 
     /**
