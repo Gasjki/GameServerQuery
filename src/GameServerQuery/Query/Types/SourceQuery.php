@@ -47,7 +47,7 @@ class SourceQuery extends AbstractQuery
             // Close socket.
             $socket->close();
 
-            unset($information, $players, $rules, $this->serverChallenge);
+            \unset($information, $players, $rules, $this->serverChallenge);
 
             return $result->toArray();
         }
@@ -58,7 +58,7 @@ class SourceQuery extends AbstractQuery
         // Close socket.
         $socket->close();
 
-        unset($information, $players, $rules, $responses, $this->serverChallenge);
+        \unset($information, $players, $rules, $responses, $this->serverChallenge);
 
         return $response;
     }
