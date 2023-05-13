@@ -72,6 +72,6 @@ class RaknetQuery extends AbstractQuery
     {
         $package = parent::createPackage($packageType);
 
-        return sprintf($package, \pack('Q', \time()), self::OFFLINE_MESSAGE_DATA_ID);
+        return \sprintf($package, \pack('Q', \time()), self::OFFLINE_MESSAGE_DATA_ID);
     }
 }

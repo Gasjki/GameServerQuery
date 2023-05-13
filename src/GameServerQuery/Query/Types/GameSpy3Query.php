@@ -76,12 +76,12 @@ class GameSpy3Query extends AbstractQuery
             return ''; // Buffer is empty.
         }
 
-        $challenge = substr(preg_replace("/[^0-9\-]/si", "", $buffer->getBuffer()), 1);
+        $challenge = \substr(\preg_replace("/[^0-9\-]/si", "", $buffer->getBuffer()), 1);
         if (!$challenge) {
             return null;
         }
 
-        return sprintf(
+        return \sprintf(
             "%c%c%c%c",
             ($challenge >> 24),
             ($challenge >> 16),
@@ -101,7 +101,7 @@ class GameSpy3Query extends AbstractQuery
     {
         $packageType = parent::createPackage($packageType);
 
-        return sprintf($packageType, $this->serverChallenge);
+        return \sprintf($packageType, $this->serverChallenge);
     }
 
     /**
