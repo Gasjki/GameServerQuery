@@ -123,7 +123,7 @@ class GameSpy3Protocol extends AbstractProtocol
                 $packets[$x] = \substr(\str_replace($prefix, '', $packets[$x]), 2);
             }
 
-            unset($buffer);
+            \unset($buffer);
         }
 
         return $packets;
@@ -215,9 +215,9 @@ class GameSpy3Protocol extends AbstractProtocol
                 }
             }
 
-            unset($temporaryBuffer);
+            \unset($temporaryBuffer);
         }
 
-        unset($data, $nbOfData, $itemGroup, $item);
+        \unset($data, $nbOfData, $itemGroup, $item);
     }
 }

@@ -102,10 +102,10 @@ abstract class SourceProtocol extends AbstractProtocol
 
             $packetId             = $buffer->readInt32Signed() + 10;
             $packets[$packetId][] = $buffer->getBuffer();
-        }
 
-        // Clear memory.
-        unset($buffer, $header, $packetId);
+            // Clear memory.
+            \unset($buffer, $header, $packetId);
+        }
 
         return $packets;
     }
@@ -206,7 +206,7 @@ abstract class SourceProtocol extends AbstractProtocol
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);
-            unset($buffer, $responseType);
+            \unset($buffer, $responseType);
         }
 
         return $result->toArray();
@@ -288,7 +288,7 @@ abstract class SourceProtocol extends AbstractProtocol
             }
         }
 
-        unset($EDFCheck);
+        \unset($EDFCheck);
     }
 
     /**
