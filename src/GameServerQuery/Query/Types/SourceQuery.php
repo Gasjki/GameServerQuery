@@ -47,7 +47,7 @@ class SourceQuery extends AbstractQuery
             // Close socket.
             $socket->close();
 
-            unset($information, $players, $rules, $this->serverChallenge);
+            \unset($information, $players, $rules, $this->serverChallenge);
 
             return $result->toArray();
         }
@@ -58,7 +58,7 @@ class SourceQuery extends AbstractQuery
         // Close socket.
         $socket->close();
 
-        unset($information, $players, $rules, $responses, $this->serverChallenge);
+        \unset($information, $players, $rules, $responses, $this->serverChallenge);
 
         return $response;
     }
@@ -73,7 +73,7 @@ class SourceQuery extends AbstractQuery
      */
     protected function createPackage(string $packageType, string $string = ''): string
     {
-        $package = parent::createPackage($packageType, $string);
+        $package = parent::createPackage($packageType);
 
         return $package . $string . ($this->serverChallenge ?? "\xFF\xFF\xFF\xFF");
     }

@@ -102,16 +102,16 @@ abstract class SourceProtocol extends AbstractProtocol
 
             $packetId             = $buffer->readInt32Signed() + 10;
             $packets[$packetId][] = $buffer->getBuffer();
-        }
 
-        // Clear memory.
-        unset($buffer, $header, $packetId);
+            // Clear memory.
+            \unset($buffer, $header, $packetId);
+        }
 
         return $packets;
     }
 
     /**
-     * Post process special packets.
+     * Pre-process special packets.
      *
      * @param int   $packetId
      * @param array $packets
@@ -206,7 +206,7 @@ abstract class SourceProtocol extends AbstractProtocol
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);
-            unset($buffer, $responseType);
+            \unset($buffer, $responseType);
         }
 
         return $result->toArray();
@@ -288,7 +288,7 @@ abstract class SourceProtocol extends AbstractProtocol
             }
         }
 
-        unset($EDFCheck);
+        \unset($EDFCheck);
     }
 
     /**
@@ -403,7 +403,7 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
-        $responses = array_filter($responses);
+        $responses = \array_filter($responses);
 
         // No data to be parsed.
         if (!\count($responses)) {
@@ -416,8 +416,6 @@ abstract class SourceProtocol extends AbstractProtocol
         }
 
         // Process packets.
-        $this->processPackets($result, $packets);
-
-        return $result->toArray();
+        return $this->processPackets($result, $packets);
     }
 }

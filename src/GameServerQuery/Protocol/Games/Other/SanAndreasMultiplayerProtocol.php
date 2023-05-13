@@ -53,7 +53,7 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
-        $responses = array_filter($responses);
+        $responses = \array_filter($responses);
 
         // No data to be parsed.
         if (!\count($responses)) {
@@ -70,9 +70,7 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
         }
 
         // Process packets.
-        $this->processPackets($result, $packets);
-
-        return $result->toArray();
+        return $this->processPackets($result, $packets);
     }
 
     /**
@@ -183,10 +181,10 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
             }
 
             $packets[] = $buffer->getBuffer();
-        }
 
-        // Clear memory.
-        unset($buffer, $header);
+            // Clear memory.
+            \unset($buffer, $header);
+        }
 
         return $packets;
     }
@@ -213,7 +211,7 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);
-            unset($buffer, $responseType);
+            \unset($buffer, $responseType);
         }
 
         return $result->toArray();
