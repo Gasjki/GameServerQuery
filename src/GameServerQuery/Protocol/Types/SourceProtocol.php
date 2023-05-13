@@ -111,7 +111,7 @@ abstract class SourceProtocol extends AbstractProtocol
     }
 
     /**
-     * Post process special packets.
+     * Pre-process special packets.
      *
      * @param int   $packetId
      * @param array $packets
@@ -403,7 +403,7 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
-        $responses = array_filter($responses);
+        $responses = \array_filter($responses);
 
         // No data to be parsed.
         if (!\count($responses)) {
@@ -416,8 +416,6 @@ abstract class SourceProtocol extends AbstractProtocol
         }
 
         // Process packets.
-        $this->processPackets($result, $packets);
-
-        return $result->toArray();
+        return $this->processPackets($result, $packets);
     }
 }

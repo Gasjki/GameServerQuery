@@ -73,7 +73,7 @@ class SourceQuery extends AbstractQuery
      */
     protected function createPackage(string $packageType, string $string = ''): string
     {
-        $package = parent::createPackage($packageType, $string);
+        $package = parent::createPackage($packageType);
 
         return $package . $string . ($this->serverChallenge ?? "\xFF\xFF\xFF\xFF");
     }

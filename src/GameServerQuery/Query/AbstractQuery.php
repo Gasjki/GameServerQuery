@@ -136,6 +136,20 @@ abstract class AbstractQuery implements QueryInterface
     }
 
     /**
+     * Read ALL (information) from server.
+     *
+     * @param Socket $socket
+     * @param int    $length
+     *
+     * @return array
+     * @throws BufferException
+     */
+    protected function readServerAll(Socket $socket, int $length = 32768): array
+    {
+        return $this->readPackageFromServer($socket, ProtocolInterface::PACKAGE_ALL, $length);
+    }
+
+    /**
      * Read information from server.
      *
      * @param Socket $socket
