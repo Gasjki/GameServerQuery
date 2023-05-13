@@ -109,6 +109,10 @@ class FiveMProtocol extends AbstractProtocol
      */
     protected function processPlayers(array $data, Result $result): void
     {
+        if (null === $result->getRule(Result::GENERAL_HOSTNAME_SUBCATEGORY)) {
+            return; // Don't add any player information if we failed to fetch server information.
+        }
+
         $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, \count($data));
 
         foreach ($data as $player) {
