@@ -56,7 +56,7 @@ class SanAndreasMultiplayerQuery extends AbstractQuery
             // Close socket.
             $socket->close();
 
-            \unset($status, $players, $rules, $this->serverChallenge);
+            unset($status, $players, $rules, $this->serverChallenge);
 
             return $result->toArray();
         }
@@ -67,7 +67,7 @@ class SanAndreasMultiplayerQuery extends AbstractQuery
         // Close socket.
         $socket->close();
 
-        \unset($status, $players, $rules, $responses, $this->serverChallenge);
+        unset($status, $players, $rules, $responses, $this->serverChallenge);
 
         return $response;
     }

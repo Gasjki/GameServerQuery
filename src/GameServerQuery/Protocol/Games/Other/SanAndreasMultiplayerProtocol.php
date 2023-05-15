@@ -183,7 +183,7 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
             $packets[] = $buffer->getBuffer();
 
             // Clear memory.
-            \unset($buffer, $header);
+            unset($buffer, $header);
         }
 
         return $packets;
@@ -211,7 +211,7 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);
-            \unset($buffer, $responseType);
+            unset($buffer, $responseType);
         }
 
         return $result->toArray();

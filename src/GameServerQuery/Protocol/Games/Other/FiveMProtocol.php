@@ -74,7 +74,7 @@ class FiveMProtocol extends AbstractProtocol
             }
 
             $this->{$this->responses[$key]}($packet, $result);
-            \unset($key, $packet);
+            unset($key, $packet);
         }
 
         return $result->toArray();
