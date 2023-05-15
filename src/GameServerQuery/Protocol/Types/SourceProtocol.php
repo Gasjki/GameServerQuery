@@ -403,7 +403,6 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
-        dump($responses);
         $responses = \array_filter($responses);
 
         // No data to be parsed.
@@ -415,8 +414,6 @@ abstract class SourceProtocol extends AbstractProtocol
         if (!$packets = $this->extractPackets($responses)) {
             return $result->toArray();
         }
-
-        dd($packets);
 
         // Process packets.
         return $this->processPackets($result, $packets);
