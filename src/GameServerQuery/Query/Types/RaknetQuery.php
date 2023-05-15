@@ -33,7 +33,7 @@ class RaknetQuery extends AbstractQuery
             // Close socket.
             $socket->close();
 
-            \unset($information, $this->serverChallenge);
+            unset($information, $this->serverChallenge);
 
             return $result->toArray();
         }
@@ -44,7 +44,7 @@ class RaknetQuery extends AbstractQuery
         // Close socket.
         $socket->close();
 
-        \unset($information, $responses, $this->serverChallenge);
+        unset($information, $responses, $this->serverChallenge);
 
         return $response;
     }

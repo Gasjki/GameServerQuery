@@ -29,7 +29,7 @@ class FiveMQuery extends AbstractQuery
 
         // No response caught. Stop the process and go the next server (if any!).
         if (!$responses) {
-            \unset($information, $players);
+            unset($information, $players);
 
             return $result->toArray();
         }
@@ -37,7 +37,7 @@ class FiveMQuery extends AbstractQuery
         // Process all information and create a new Result object.
         $response = $this->server->getProtocol()->handleResponse($result, $responses);
 
-        \unset($information, $players, $responses);
+        unset($information, $players, $responses);
 
         return $response;
     }

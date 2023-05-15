@@ -104,7 +104,7 @@ abstract class SourceProtocol extends AbstractProtocol
             $packets[$packetId][] = $buffer->getBuffer();
 
             // Clear memory.
-            \unset($buffer, $header, $packetId);
+            unset($buffer, $header, $packetId);
         }
 
         return $packets;
@@ -206,7 +206,7 @@ abstract class SourceProtocol extends AbstractProtocol
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);
-            \unset($buffer, $responseType);
+            unset($buffer, $responseType);
         }
 
         return $result->toArray();
@@ -288,7 +288,7 @@ abstract class SourceProtocol extends AbstractProtocol
             }
         }
 
-        \unset($EDFCheck);
+        unset($EDFCheck);
     }
 
     /**
@@ -403,6 +403,7 @@ abstract class SourceProtocol extends AbstractProtocol
      */
     public function handleResponse(Result $result, array $responses): array
     {
+        dump($responses);
         $responses = \array_filter($responses);
 
         // No data to be parsed.
@@ -414,6 +415,8 @@ abstract class SourceProtocol extends AbstractProtocol
         if (!$packets = $this->extractPackets($responses)) {
             return $result->toArray();
         }
+
+        dd($packets);
 
         // Process packets.
         return $this->processPackets($result, $packets);
