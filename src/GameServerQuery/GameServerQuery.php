@@ -189,8 +189,10 @@ class GameServerQuery
         foreach ($results as $fullAddress => $response) {
             foreach ($this->filters as $filter => $options) {
                 /** @var FilterInterface $filter */
-                $processedServers[$fullAddress] = (new $filter($response, $options))->apply();
+                $processedServers[$fullAddress] = (new $filter($processedServers[$fullAddress] ?? $response, $options))->apply();
             }
+
+            unset($response);
         }
 
         /** @var FormatterInterface $formatter */
