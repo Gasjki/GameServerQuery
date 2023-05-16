@@ -67,8 +67,8 @@ abstract class AbstractFilter implements FilterInterface
         if ($this->protocols) {
             /** @var ProtocolInterface $serverProtocol */
             $serverProtocol     = $this->response[Result::GENERAL_CATEGORY][Result::GENERAL_APPLICATION_SUBCATEGORY];
-            $supportedProtocols = \array_filter($this->protocols, static function($protocol) use ($serverProtocol) {
-                return \is_subclass_of($serverProtocol, $protocol) || \is_a($serverProtocol, $protocol);
+            $supportedProtocols = \array_filter($this->protocols, static function(string $protocol) use ($serverProtocol) {
+                return \is_subclass_of($serverProtocol, $protocol) || \is_a($serverProtocol, $protocol, true);
             });
 
             if (!\count($supportedProtocols)) {
