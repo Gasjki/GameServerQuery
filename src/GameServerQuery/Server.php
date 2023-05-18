@@ -41,14 +41,14 @@ class Server
         $this->protocol  = new $protocol;
         $this->ipAddress = DNSResolveHelper::resolveAddress(\trim($this->ipAddress));
 
-        if (!\filter_var($this->port, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1000, 'max_range' => 99999]])) {
+        if (!\filter_var($this->port, FILTER_VALIDATE_INT, ['options' => ['min_range' => 10, 'max_range' => 99999]])) {
             throw new \InvalidArgumentException(
                 sprintf('Provided port "%d" is too lower / higher. You need to provide a port between 1000 and 99999.', $this->port)
             );
         }
 
         if ($this->queryPort || $this->protocol->isQueryPortMandatory()) {
-            if (!\filter_var($this->queryPort, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1000, 'max_range' => 99999]])) {
+            if (!\filter_var($this->queryPort, FILTER_VALIDATE_INT, ['options' => ['min_range' => 10, 'max_range' => 99999]])) {
                 throw new \InvalidArgumentException(
                     sprintf('Provided query port "%d" is too lower / higher. You need to provide a port between 1000 and 99999.', $this->queryPort)
                 );

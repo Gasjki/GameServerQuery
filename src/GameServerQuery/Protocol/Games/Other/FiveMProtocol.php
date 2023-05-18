@@ -2,7 +2,7 @@
 
 namespace GameServerQuery\Protocol\Games\Other;
 
-use GameServerQuery\Exception\Buffer\InvalidBufferContentException;
+use GameServerQuery\Buffer;
 use GameServerQuery\Protocol\AbstractProtocol;
 use GameServerQuery\Query\Types\FiveMQuery;
 use GameServerQuery\Result;
@@ -20,16 +20,8 @@ class FiveMProtocol extends AbstractProtocol
      *
      * @var array
      */
-    protected array $packages = ['NoPackageForThisGame'];
-
-    /**
-     * Socket responses and their corresponding protocol method.
-     *
-     * @var array
-     */
-    protected array $responses = [
-        "information" => "processInformation",
-        "players"     => "processPlayers",
+    protected array $packages = [
+        self::PACKAGE_STATUS => "\xFF\xFF\xFF\xFFgetinfo xxx",
     ];
 
     /**
@@ -68,14 +60,8 @@ class FiveMProtocol extends AbstractProtocol
      */
     protected function processPackets(Result $result, array $packets): array
     {
-        foreach ($packets as $key => $packet) {
-            if (!\array_key_exists($key, $this->responses)) {
-                throw new InvalidBufferContentException($key, $packet);
-            }
-
-            $this->{$this->responses[$key]}($packet, $result);
-            unset($key, $packet);
-        }
+        $this->processInformation(new Buffer(\implode('', $packets['information'] ?? [])), $result);
+        $this->processPlayers($packets['players'] ?? [], $result);
 
         return $result->toArray();
     }
@@ -83,22 +69,41 @@ class FiveMProtocol extends AbstractProtocol
     /**
      * Process server information.
      *
-     * @param array  $data
+     * @param Buffer $buffer
      * @param Result $result
-     *
      */
-    protected function processInformation(array $data, Result $result): void
+    protected function processInformation(Buffer $buffer, Result $result): void
     {
-        $vars = $data['vars'] ?? [];
+        if (!$buffer->getBuffer()) {
+            return;
+        }
+
+        $buffer->skip(17);
+        if ($buffer->lookAhead() === '\\') {
+            $buffer->skip();
+        }
+
+        $data     = explode('\\', $buffer->getBuffer());
+        $info     = [];
+        $savedKey = null;
+
+        foreach ($data as $key => $value) {
+            if (($key % 2) === 0) {
+                $savedKey = $value;
+            } else {
+                $info[$savedKey] = $value;
+            }
+        }
 
         $result->addInformation(Result::GENERAL_ACTIVE_SUBCATEGORY, true);
         $result->addInformation(Result::GENERAL_SERVER_TYPE_SUBCATEGORY, 'd'); // Always.
-        $result->addInformation(Result::GENERAL_HOSTNAME_SUBCATEGORY, $vars['sv_projectName']);
+        $result->addInformation(Result::GENERAL_HOSTNAME_SUBCATEGORY, $info['hostname'] ?? null);
+        $result->addInformation(Result::GENERAL_MAP_SUBCATEGORY, $info['mapname'] ?? null);
         $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, 0); // It will be overwritten under `processPlayers` method.
-        $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, (int) $vars['sv_maxClients']);
-        $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $data['version']);
+        $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, (int) $info['sv_maxclients']);
+        $result->addInformation(Result::GENERAL_VERSION_SUBCATEGORY, $info['iv'] ?? null);
 
-        $result->addRule('raw_information', $data);
+        $result->addRule('raw_information', $info);
     }
 
     /**

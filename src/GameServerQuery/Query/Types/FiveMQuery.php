@@ -2,6 +2,7 @@
 
 namespace GameServerQuery\Query\Types;
 
+use GameServerQuery\Buffer;
 use GameServerQuery\Query\AbstractQuery;
 use GameServerQuery\Result;
 use GameServerQuery\Socket;
@@ -20,10 +21,13 @@ class FiveMQuery extends AbstractQuery
     {
         $result = new Result(parent::execute());
 
+        // Open socket for server.
+        $socket = new Socket($this->server, $this->config->get('timeout', 3));
+
         // Fetch server data.
         $responses = [];
 
-        $responses['information'] = $this->readServerInformationUrl();
+        $responses['information'] = $this->readServerStatus($socket);
         $responses['players']     = $this->readServerPlayersUrl();
         $responses                = array_filter($responses);
 
@@ -47,19 +51,27 @@ class FiveMQuery extends AbstractQuery
      */
     protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32768): array
     {
-        return [];
+        $package   = $this->createPackage($packageType);
+        $responses = $this->doRead($socket, $package, $length);
+        $buffer    = new Buffer(\implode('', $responses));
+
+        if (!$buffer->getLength()) {
+            return []; // Buffer is empty.
+        }
+
+        return [$buffer->getData()];
     }
 
     /**
-     * Read information from given URL and convert it to JSON.
-     *
-     * @param string $url
+     * Read server's players.
      *
      * @return array
      * @throws \JsonException
      */
-    private function readFromUrl(string $url): array
+    private function readServerPlayersUrl(): array
     {
+        $url = \sprintf("http://%s:%s/players.json", $this->server->getIpAddress(), $this->server->getPort());
+
         $opts = [
             'http' => [
                 'method' => "GET",
@@ -73,31 +85,5 @@ class FiveMQuery extends AbstractQuery
         }
 
         return \json_decode($data, true, 512, JSON_THROW_ON_ERROR);
-    }
-
-    /**
-     * Read server's information.
-     *
-     * @return array
-     * @throws \JsonException
-     */
-    private function readServerInformationUrl(): array
-    {
-        $url = \sprintf("http://%s:%s/info.json", $this->server->getIpAddress(), $this->server->getPort());
-
-        return $this->readFromUrl($url);
-    }
-
-    /**
-     * Read server's players.
-     *
-     * @return array
-     * @throws \JsonException
-     */
-    private function readServerPlayersUrl(): array
-    {
-        $url = \sprintf("http://%s:%s/players.json", $this->server->getIpAddress(), $this->server->getPort());
-
-        return $this->readFromUrl($url);
     }
 }
