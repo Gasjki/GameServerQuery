@@ -1,6 +1,6 @@
 # 📊 Game Server Query
 
-Current version: **1.0.22**
+Current version: **1.0.23**
 
 ### [Inspiration: GameQ by AustinB](https://github.com/Austinb/GameQ)
 
@@ -41,7 +41,6 @@ Live example: https://gamefire.ro
 - Atlas - does NOT support players;
 - Barotrauma - does NOT support players;
 - Battalion 1944 - does NOT support players;
-- Conan Exiles - does NOT support players;
 - Contagion - does NOT support players;
 - Day Z - does NOT support players / rules;
 - Empyrion Galactic Survival - does NOT support players / rules;

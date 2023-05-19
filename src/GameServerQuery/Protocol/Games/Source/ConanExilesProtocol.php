@@ -2,9 +2,7 @@
 
 namespace GameServerQuery\Protocol\Games\Source;
 
-use GameServerQuery\Buffer;
 use GameServerQuery\Protocol\Types\SourceProtocol;
-use GameServerQuery\Result;
 
 /**
  * Class ConanExilesProtocol
@@ -25,13 +23,4 @@ class ConanExilesProtocol extends SourceProtocol
      * @var bool
      */
     protected bool $queryPortMandatory = true;
-
-    /**
-     * @inheritDoc
-     */
-    protected function processPlayers(Buffer $buffer, Result $result): void
-    {
-        // Players list is not supported by this game.
-        // To fast things up, let's skip the entire process.
-    }
 }

@@ -2,7 +2,6 @@
 
 namespace GameServerQuery\Query\Types;
 
-use GameServerQuery\Buffer;
 use GameServerQuery\Exception\Buffer\BufferException;
 use GameServerQuery\Exception\Socket\SocketCreationFailedException;
 use GameServerQuery\Interfaces\ProtocolInterface;
@@ -90,28 +89,5 @@ class SanAndreasMultiplayerQuery extends AbstractQuery
         };
 
         return $package . $this->serverChallenge . $type;
-    }
-
-    /**
-     * Read specific package from given servers' socket.
-     *
-     * @param Socket $socket
-     * @param string $packageType
-     * @param int    $length
-     *
-     * @return array
-     * @throws BufferException
-     */
-    protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32768): array
-    {
-        $package   = $this->createPackage($packageType);
-        $responses = $this->doRead($socket, $package, $length);
-        $buffer    = new Buffer(\implode('', $responses));
-
-        if (!$buffer->getLength()) {
-            return []; // Buffer is empty.
-        }
-
-        return [$buffer->getData()];
     }
 }

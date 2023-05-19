@@ -2,7 +2,6 @@
 
 namespace GameServerQuery\Query\Types;
 
-use GameServerQuery\Buffer;
 use GameServerQuery\Query\AbstractQuery;
 use GameServerQuery\Result;
 use GameServerQuery\Socket;
@@ -25,41 +24,22 @@ class FiveMQuery extends AbstractQuery
         $socket = new Socket($this->server, $this->config->get('timeout', 3));
 
         // Fetch server data.
-        $responses = [];
-
+        $responses                = [];
         $responses['information'] = $this->readServerStatus($socket);
         $responses['players']     = $this->readServerPlayersUrl();
-        $responses                = array_filter($responses);
 
         // No response caught. Stop the process and go the next server (if any!).
         if (!$responses) {
-            unset($information, $players);
+            unset($responses);
 
             return $result->toArray();
         }
 
         // Process all information and create a new Result object.
         $response = $this->server->getProtocol()->handleResponse($result, $responses);
-
-        unset($information, $players, $responses);
+        unset($responses);
 
         return $response;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32768): array
-    {
-        $package   = $this->createPackage($packageType);
-        $responses = $this->doRead($socket, $package, $length);
-        $buffer    = new Buffer(\implode('', $responses));
-
-        if (!$buffer->getLength()) {
-            return []; // Buffer is empty.
-        }
-
-        return [$buffer->getData()];
     }
 
     /**
@@ -74,7 +54,8 @@ class FiveMQuery extends AbstractQuery
 
         $opts = [
             'http' => [
-                'method' => "GET",
+                'method'  => "GET",
+                'timeout' => $this->config->get('timeout', 3),
             ],
         ];
 

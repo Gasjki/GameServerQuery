@@ -60,7 +60,12 @@ class FiveMProtocol extends AbstractProtocol
      */
     protected function processPackets(Result $result, array $packets): array
     {
-        $this->processInformation(new Buffer(\implode('', $packets['information'] ?? [])), $result);
+        $buffer = new Buffer(\implode('', $packets['information'] ?? []));
+        if (!$buffer->getBuffer()) {
+            return $result->toArray();
+        }
+
+        $this->processInformation($buffer, $result);
         $this->processPlayers($packets['players'] ?? [], $result);
 
         return $result->toArray();
@@ -74,16 +79,12 @@ class FiveMProtocol extends AbstractProtocol
      */
     protected function processInformation(Buffer $buffer, Result $result): void
     {
-        if (!$buffer->getBuffer()) {
-            return;
-        }
-
         $buffer->skip(17);
         if ($buffer->lookAhead() === '\\') {
             $buffer->skip();
         }
 
-        $data     = explode('\\', $buffer->getBuffer());
+        $data     = \explode('\\', $buffer->getBuffer());
         $info     = [];
         $savedKey = null;
 
@@ -93,6 +94,10 @@ class FiveMProtocol extends AbstractProtocol
             } else {
                 $info[$savedKey] = $value;
             }
+        }
+
+        if (\array_key_exists('challenge', $info)) {
+            unset($info['challenge']);
         }
 
         $result->addInformation(Result::GENERAL_ACTIVE_SUBCATEGORY, true);

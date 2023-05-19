@@ -111,7 +111,7 @@ class GameSpy3Query extends AbstractQuery
     {
         $package   = $this->createPackage($packageType);
         $responses = $this->doRead($socket, $package, $length);
-        $buffer    = new Buffer(\implode('', $responses), Buffer::NUMBER_TYPE_BIG_ENDIAN);
+        $buffer    = new Buffer(\implode('', $responses), Buffer::NUMBER_TYPE_BIG_ENDIAN); // Big Endian.
 
         if (!$buffer->getLength()) {
             return []; // Buffer is empty.

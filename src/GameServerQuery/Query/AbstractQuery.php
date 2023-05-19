@@ -2,6 +2,7 @@
 
 namespace GameServerQuery\Query;
 
+use GameServerQuery\Buffer;
 use GameServerQuery\Config;
 use GameServerQuery\Exception\Buffer\BufferException;
 use GameServerQuery\Interfaces\ProtocolInterface;
@@ -117,7 +118,18 @@ abstract class AbstractQuery implements QueryInterface
      * @return array
      * @throws BufferException
      */
-    abstract protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32768): array;
+    protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32768): array
+    {
+        $package   = $this->createPackage($packageType);
+        $responses = $this->doRead($socket, $package, $length);
+        $buffer    = new Buffer(\implode('', $responses));
+
+        if (!$buffer->getLength()) {
+            return []; // Buffer is empty.
+        }
+
+        return [$buffer->getData()];
+    }
 
     /**
      * Create package.

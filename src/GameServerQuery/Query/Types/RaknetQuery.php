@@ -2,11 +2,14 @@
 
 namespace GameServerQuery\Query\Types;
 
-use GameServerQuery\Buffer;
 use GameServerQuery\Query\AbstractQuery;
 use GameServerQuery\Result;
 use GameServerQuery\Socket;
 
+/**
+ * Class RaknetQuery
+ * @package GameServerQuery\Query\Types
+ */
 class RaknetQuery extends AbstractQuery
 {
     public const ID_UNCONNECTED_PONG     = "\x1C";
@@ -47,22 +50,6 @@ class RaknetQuery extends AbstractQuery
         unset($information, $responses, $this->serverChallenge);
 
         return $response;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function readPackageFromServer(Socket $socket, string $packageType, int $length = 32768): array
-    {
-        $package   = $this->createPackage($packageType);
-        $responses = $this->doRead($socket, $package, $length);
-        $buffer    = new Buffer(\implode('', $responses));
-
-        if (!$buffer->getLength()) {
-            return []; // Buffer is empty.
-        }
-
-        return [$buffer->getData()];
     }
 
     /**

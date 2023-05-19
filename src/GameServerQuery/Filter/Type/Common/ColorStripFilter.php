@@ -1,14 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace GameServerQuery\Filter\Type\Other;
+namespace GameServerQuery\Filter\Type\Common;
 
 use GameServerQuery\Filter\AbstractFilter;
 
 /**
- * Class FiveMHostnameColorStripFilter
- * @package GameServerQuery\Filter\Type\Other
+ * Class ColorFilter
+ * @package GameServerQuery\Filter\Type\Common
  */
-class FiveMHostnameColorStripFilter extends AbstractFilter
+class ColorStripFilter extends AbstractFilter
 {
     /**
      * Filter method name.
@@ -18,7 +18,7 @@ class FiveMHostnameColorStripFilter extends AbstractFilter
     protected static string $filterMethodName = 'stripColors';
 
     /**
-     * Convert existing text to UTF-8.
+     * Strip colors.
      *
      * @param string|null $text
      *
