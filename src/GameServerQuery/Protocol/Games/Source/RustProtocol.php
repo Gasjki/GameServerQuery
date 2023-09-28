@@ -35,12 +35,16 @@ class RustProtocol extends SourceProtocol
     {
         parent::processRules($buffer, $result);
 
-        if ($keywords = $result->getRule('keywords')) {
-            //get max players from mp of keywords and num players from cp keyword
-            preg_match_all('/(mp|cp)(\d+)/', $keywords, $matches);
-
-            $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, (int) $matches[2][0]);
-            $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, (int) $matches[2][1]);
+        if (!$result->hasRule('keywords')) {
+            return;
         }
+
+        $keywords = $result->getRule('keywords');
+
+        // Get max players from mp of keywords and num players from cp keyword.
+        preg_match_all('/(mp|cp)(\d+)/', $keywords, $matches);
+
+        $result->addInformation(Result::GENERAL_SLOTS_SUBCATEGORY, (int) $matches[2][0]);
+        $result->addInformation(Result::GENERAL_ONLINE_PLAYERS_SUBCATEGORY, (int) $matches[2][1]);
     }
 }
