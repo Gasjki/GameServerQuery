@@ -207,7 +207,7 @@ class SanAndreasMultiplayerProtocol extends AbstractProtocol
             $responseType = $buffer->read();
 
             if (!\array_key_exists($responseType, $this->responses)) {
-                throw new InvalidBufferContentException($responseType, \bin2hex($buffer->getData()));
+                throw new InvalidBufferContentException($responseType, $packets);
             }
 
             $this->{$this->responses[$responseType]}($buffer, $result);

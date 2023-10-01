@@ -4,14 +4,21 @@ namespace GameServerQuery\Exception\Buffer;
 
 class InvalidBufferContentException extends BufferException
 {
-    public function __construct(string $responseType, string $buffer)
+    public function __construct(string $responseType, private array $packets)
     {
         parent::__construct(
             \sprintf(
-                'Requested parser method for response \'%s\' does not exist for current protocol! Buffer received: %s',
+                'Requested parser method for response \'%s\' does not exist for current protocol!',
                 $responseType,
-                $buffer
             )
         );
+    }
+
+    /**
+     * @return array
+     */
+    public function getPackets(): array
+    {
+        return $this->packets;
     }
 }
