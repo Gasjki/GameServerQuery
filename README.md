@@ -26,6 +26,10 @@ Use the following Composer command to add your package:
 
 **Note:** Update your package to the latest version using `composer update gasjki/game-server-query`.
 
+### Running unit tests
+
+To run unit tests, use this command: `./vendor/bin/phpunit . --testdox`.
+
 ### Examples
 
 See more examples [here](https://github.com/Gasjki/GameServerQuery/wiki).

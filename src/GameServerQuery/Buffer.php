@@ -289,7 +289,7 @@ class Buffer
             default                         => 'Lint',
         };
 
-        $isLittleEndian = str_starts_with($type, 'L') ? null : (true === str_starts_with($type, 'V'));
+        $isLittleEndian = \str_starts_with($type, 'L') ? null : (true === \str_starts_with($type, 'V'));
         $string         = $this->read($length);
         $int            = \unpack($type, self::extendBinaryString($string, isLittleEndian: $isLittleEndian));
 
@@ -353,6 +353,16 @@ class Buffer
         $float = \unpack('ffloat', $string);
 
         return $float['float'];
+    }
+
+    /**
+     * Reset index.
+     *
+     * @return void
+     */
+    public function reset(): void
+    {
+        $this->index = 0;
     }
 
     private static function extendBinaryString(string $input, int $length = 4, ?bool $isLittleEndian = null): string

@@ -43,7 +43,13 @@
       "GameServerQuery\\": "src/GameServerQuery/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "GameServerQuery\\Tests\\": "Tests/"
+    }
+  },
   "require-dev": {
-    "symfony/var-dumper": "^6.0"
+    "symfony/var-dumper": "^6.0",
+    "phpunit/phpunit": "^9"
   }
 }
