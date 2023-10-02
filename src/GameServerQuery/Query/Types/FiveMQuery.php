@@ -14,6 +14,7 @@ class FiveMQuery extends AbstractQuery
 {
     /**
      * @inheritDoc
+     * @throws \JsonException
      */
     public function execute(): array
     {
@@ -45,6 +46,7 @@ class FiveMQuery extends AbstractQuery
      * Read server's players.
      *
      * @return array
+     * @throws \JsonException
      */
     private function readServerPlayersUrl(): array
     {
@@ -57,17 +59,18 @@ class FiveMQuery extends AbstractQuery
             ],
         ];
 
-        try {
-            $data     = @\file_get_contents($url, false, stream_context_create($opts));
-            $response = \json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+        $data = @\file_get_contents($url, false, stream_context_create($opts));
 
-            if (!\is_array($response)) {
-                return [];
-            }
-
-            return $response;
-        } catch (\JsonException) {
+        if (!\is_string($data)) {
             return [];
         }
+
+        $response = \json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+
+        if (!\is_array($response)) {
+            return [];
+        }
+
+        return $response;
     }
 }
